@@ -16,7 +16,7 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: 'created_at',      label: '新着順' },
 ];
 
-const INTENT_OPTIONS: (Intent | 'すべて')[] = ['すべて', '商品化したい', '後で考えたい', 'ただのメモ'];
+const INTENT_OPTIONS: (Intent | 'すべて')[] = ['すべて', '商品化', '検討中', 'メモ'];
 const PROJECT_OPTIONS: (RelatedProject | 'すべて')[] = ['すべて', 'TrainerDocs', 'IdeaStock', 'その他'];
 
 function ScorePips({ score }: { score: number }) {
@@ -30,8 +30,8 @@ function ScorePips({ score }: { score: number }) {
 }
 
 function intentStyle(intent: string) {
-  if (intent === '商品化したい') return 'bg-green-100 text-green-700';
-  if (intent === '後で考えたい')  return 'bg-yellow-100 text-yellow-700';
+  if (intent === '商品化') return 'bg-green-100 text-green-700';
+  if (intent === '検討中')  return 'bg-yellow-100 text-yellow-700';
   return 'bg-gray-100 text-gray-600';
 }
 

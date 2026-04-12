@@ -10,7 +10,7 @@ create table if not exists public.idea_stocks (
   raw_text         text not null,
   human_note       text,
   intent           text not null
-                     check (intent in ('商品化したい','後で考えたい','ただのメモ')),
+                     check (intent in ('商品化','検討中','メモ')),
   related_project  text not null default 'その他'
                      check (related_project in ('TrainerDocs','IdeaStock','その他')),
 

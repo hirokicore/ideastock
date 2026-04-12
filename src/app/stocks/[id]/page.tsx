@@ -21,8 +21,8 @@ function ScoreDots({ score }: { score: number }) {
 }
 
 function intentStyle(intent: string) {
-  if (intent === '商品化したい') return 'bg-green-100 text-green-700';
-  if (intent === '後で考えたい')  return 'bg-yellow-100 text-yellow-700';
+  if (intent === '商品化') return 'bg-green-100 text-green-700';
+  if (intent === '検討中')  return 'bg-yellow-100 text-yellow-700';
   return 'bg-gray-100 text-gray-600';
 }
 
