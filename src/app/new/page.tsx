@@ -1,0 +1,349 @@
+'use client';
+
+import { useState, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
+import { Sparkles, Save, RotateCcw, ChevronRight } from 'lucide-react';
+import Header from '@/components/layout/Header';
+import type { StockFormData, AnalysisResult } from '@/types';
+import { recommendBadgeStyle } from '@/lib/utils';
+
+type PageState = 'form' | 'analyzing' | 'review' | 'saving';
+
+const SOURCE_PLATFORMS = ['Claude', 'ChatGPT', 'Perplexity', 'Gemini', 'Memo'] as const;
+const INTENTS = ['商品化したい', '後で考えたい', 'ただのメモ'] as const;
+const RELATED_PROJECTS = ['TrainerDocs', 'IdeaStock', 'その他'] as const;
+
+function ScoreDots({ score }: { score: number }) {
+  return (
+    <div className="flex gap-1 items-center">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div
+          key={i}
+          className={`w-2.5 h-2.5 rounded-full transition-colors ${
+            i <= score ? 'bg-brand-500' : 'bg-gray-200'
+          }`}
+        />
+      ))}
+      <span className="ml-1 text-sm text-gray-500">{score}/5</span>
+    </div>
+  );
+}
+
+export default function NewPage() {
+  const router = useRouter();
+  const [state, setState] = useState<PageState>('form');
+  const [error, setError] = useState('');
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+
+  const [form, setForm] = useState<StockFormData>({
+    title: '',
+    source_platform: '',
+    raw_text: '',
+    human_note: '',
+    intent: '',
+    related_project: '',
+  });
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setError('');
+  };
+
+  const handleAnalyze = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!form.source_platform || !form.intent || !form.related_project) {
+      setError('すべての項目を入力してください');
+      return;
+    }
+    setState('analyzing');
+    setError('');
+
+    try {
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'AI分析に失敗しました');
+      setAnalysis(data as AnalysisResult);
+      setState('review');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '分析中にエラーが発生しました');
+      setState('form');
+    }
+  };
+
+  const handleSave = async () => {
+    if (!analysis) return;
+    setState('saving');
+    setError('');
+
+    try {
+      const res = await fetch('/api/stocks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, ...analysis }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? '保存に失敗しました');
+      router.push('/stocks');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '保存中にエラーが発生しました');
+      setState('review');
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Header />
+
+      <main className="flex-1 py-10 px-4">
+        <div className="max-w-2xl mx-auto">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-1.5 text-sm text-gray-400 mb-6">
+            <span
+              className={state !== 'form' && state !== 'analyzing' ? 'text-gray-400' : 'text-brand-600 font-medium'}
+            >
+              入力
+            </span>
+            <ChevronRight size={14} />
+            <span className={state === 'review' || state === 'saving' ? 'text-brand-600 font-medium' : 'text-gray-400'}>
+              AI分析結果を確認
+            </span>
+            <ChevronRight size={14} />
+            <span className={state === 'saving' ? 'text-brand-600 font-medium' : 'text-gray-400'}>保存</span>
+          </div>
+
+          {/* ── FORM ── */}
+          {(state === 'form' || state === 'analyzing') && (
+            <form onSubmit={handleAnalyze} className="space-y-6">
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
+                <h1 className="text-xl font-bold text-gray-900">新規ストック登録</h1>
+
+                <div>
+                  <label className="form-label">タイトル <span className="text-red-500">*</span></label>
+                  <input
+                    name="title"
+                    value={form.title}
+                    onChange={handleChange}
+                    required
+                    className="form-input"
+                    placeholder="例：AIで契約書を自動生成するSaaSのアイデア"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="form-label">出所 <span className="text-red-500">*</span></label>
+                    <select name="source_platform" value={form.source_platform} onChange={handleChange} required className="form-select">
+                      <option value="">選択</option>
+                      {SOURCE_PLATFORMS.map((p) => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="form-label">用途 <span className="text-red-500">*</span></label>
+                    <select name="intent" value={form.intent} onChange={handleChange} required className="form-select">
+                      <option value="">選択</option>
+                      {INTENTS.map((i) => (
+                        <option key={i} value={i}>{i}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="form-label">関連PJ <span className="text-red-500">*</span></label>
+                    <select name="related_project" value={form.related_project} onChange={handleChange} required className="form-select">
+                      <option value="">選択</option>
+                      {RELATED_PROJECTS.map((p) => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="form-label">
+                    本文（コピペ） <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    name="raw_text"
+                    value={form.raw_text}
+                    onChange={handleChange}
+                    required
+                    rows={10}
+                    className="form-textarea"
+                    placeholder="AIとの会話ログ、メモ、アイデアなどをそのままペーストしてください"
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label">一言メモ（任意）</label>
+                  <input
+                    name="human_note"
+                    value={form.human_note}
+                    onChange={handleChange}
+                    className="form-input"
+                    placeholder="例：これは来月中に着手したい"
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+                  {error}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={state === 'analyzing'}
+                className="btn-primary w-full text-base py-4"
+              >
+                {state === 'analyzing' ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Claude が分析中...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={18} />
+                    整理する
+                  </>
+                )}
+              </button>
+            </form>
+          )}
+
+          {/* ── REVIEW ── */}
+          {(state === 'review' || state === 'saving') && analysis && (
+            <div className="space-y-6">
+              {/* Entry summary */}
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <span className="badge bg-brand-100 text-brand-700">{form.source_platform}</span>
+                  <span className="badge bg-purple-100 text-purple-700">{form.intent}</span>
+                  <span className="badge bg-gray-100 text-gray-600">{form.related_project}</span>
+                </div>
+                <h2 className="text-lg font-bold text-gray-900">{form.title}</h2>
+                {form.human_note && (
+                  <p className="text-sm text-gray-500 mt-1 italic">「{form.human_note}」</p>
+                )}
+              </div>
+
+              {/* AI analysis */}
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
+                <div className="flex items-center gap-2 text-brand-700 font-semibold">
+                  <Sparkles size={18} />
+                  AI分析結果
+                </div>
+
+                {/* Summary */}
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">要約</p>
+                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{analysis.summary}</p>
+                </div>
+
+                {/* Tags */}
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">タグ</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {analysis.tags.map((tag) => (
+                      <span key={tag} className="badge bg-gray-100 text-gray-700">{tag}</span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Ideas */}
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">抽出アイデア</p>
+                  <ul className="space-y-1.5">
+                    {analysis.idea_list.map((idea, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                        <span className="text-brand-400 font-bold mt-0.5">·</span>
+                        {idea}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Product formats */}
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">商品化の形</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {analysis.product_formats.map((fmt) => (
+                      <span key={fmt} className="badge bg-indigo-50 text-indigo-700 border border-indigo-100">{fmt}</span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Scores */}
+                <div className="border-t border-gray-100 pt-5 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1.5">インパクト</p>
+                      <ScoreDots score={analysis.impact_score} />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1.5">実現難易度</p>
+                      <ScoreDots score={analysis.difficulty_score} />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1.5">継続性</p>
+                      <ScoreDots score={analysis.continuity_score} />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 pt-1">
+                    <span
+                      className={`text-2xl font-bold px-4 py-1.5 rounded-xl ${recommendBadgeStyle(analysis.recommend_score)}`}
+                    >
+                      {analysis.recommend_score}点
+                    </span>
+                    <p className="text-sm text-gray-600 leading-relaxed">{analysis.recommend_reason}</p>
+                  </div>
+                </div>
+              </div>
+
+              {error && (
+                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+                  {error}
+                </p>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => { setState('form'); setAnalysis(null); }}
+                  disabled={state === 'saving'}
+                  className="btn-secondary flex-1"
+                >
+                  <RotateCcw size={16} />
+                  やり直す
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={state === 'saving'}
+                  className="btn-primary flex-1"
+                >
+                  {state === 'saving' ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      保存中...
+                    </>
+                  ) : (
+                    <>
+                      <Save size={16} />
+                      保存する
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}
