@@ -158,9 +158,10 @@ export default function StocksClient({ initialStocks }: { initialStocks: IdeaSto
           {/* Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {stocks.map((stock) => (
-              <div
+              <Link
                 key={stock.id}
-                className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-3"
+                href={`/stocks/${stock.id}`}
+                className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-brand-200 transition-all flex flex-col gap-3"
               >
                 {/* Badges */}
                 <div className="flex flex-wrap gap-1.5">
@@ -227,7 +228,7 @@ export default function StocksClient({ initialStocks }: { initialStocks: IdeaSto
                   )}
                   <span className="text-xs text-gray-300 flex-shrink-0">{formatDate(stock.created_at)}</span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
