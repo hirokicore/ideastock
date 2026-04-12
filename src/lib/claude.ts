@@ -1,8 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { AnalysisResult } from '@/types';
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
 export async function analyzeStock(params: {
   title: string;
   source_platform: string;
@@ -10,6 +8,17 @@ export async function analyzeStock(params: {
   human_note?: string;
   intent: string;
 }): Promise<AnalysisResult> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    throw new Error('ANTHROPIC_API_KEY が設定されていません。Vercel の環境変数を確認してください。');
+  }
+
+  const client = new Anthropic({
+    apiKey,
+    timeout: 50_000, // Vercel Hobby の最大実行時間 60s に余裕を持たせた 50s
+    maxRetries: 0,
+  });
+
   const prompt = `あなたは個人開発者の思考ストックを整理するAIアシスタントです。
 以下の入力テキストを分析し、必ず下記のJSONフォーマットのみで返してください。
 

@@ -32,8 +32,9 @@ export async function POST(request: NextRequest) {
     const result = await analyzeStock(body);
     return NextResponse.json(result);
   } catch (err) {
-    console.error('Claude analysis error:', err);
     const message = err instanceof Error ? err.message : 'AI分析に失敗しました';
+    const name    = err instanceof Error ? err.name    : 'UnknownError';
+    console.error('[/api/analyze] error:', { name, message });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
