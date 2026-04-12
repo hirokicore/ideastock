@@ -32,9 +32,15 @@ export async function POST(request: NextRequest) {
     const result = await analyzeStock(body);
     return NextResponse.json(result);
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'AI分析に失敗しました';
-    const name    = err instanceof Error ? err.name    : 'UnknownError';
-    console.error('[/api/analyze] error:', { name, message });
-    return NextResponse.json({ error: message }, { status: 500 });
+    const detail = {
+      name:    err instanceof Error ? err.name    : 'UnknownError',
+      message: err instanceof Error ? err.message : String(err),
+      status:  (err as Record<string, unknown>)['status']  ?? null,
+      error:   (err as Record<string, unknown>)['error']   ?? null,
+      cause:   (err as Record<string, unknown>)['cause']   ?? null,
+      stack:   err instanceof Error ? (err.stack ?? null)  : null,
+    };
+    console.error('[/api/analyze] error:', detail);
+    return NextResponse.json({ error: detail.message, detail }, { status: 500 });
   }
 }
