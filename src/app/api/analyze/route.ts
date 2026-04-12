@@ -14,7 +14,6 @@ export async function POST(request: NextRequest) {
     source_platform: string;
     raw_text: string;
     human_note?: string;
-    intent: string;
   };
 
   try {
@@ -23,8 +22,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'リクエストデータが不正です' }, { status: 400 });
   }
 
-  const { title, source_platform, raw_text, intent } = body;
-  if (!title || !source_platform || !raw_text || !intent) {
+  const { title, source_platform, raw_text } = body;
+  if (!title || !source_platform || !raw_text) {
     return NextResponse.json({ error: '必須項目が不足しています' }, { status: 400 });
   }
 

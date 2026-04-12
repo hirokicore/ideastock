@@ -7,7 +7,6 @@ export async function analyzeStock(params: {
   source_platform: string;
   raw_text: string;
   human_note?: string;
-  intent: string;
 }): Promise<AnalysisResult> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -20,7 +19,6 @@ export async function analyzeStock(params: {
 ---
 タイトル: ${params.title}
 出所プラットフォーム: ${params.source_platform}
-用途の意図: ${params.intent}
 本文:
 ${params.raw_text}${params.human_note ? `\n一言メモ: ${params.human_note}` : ''}
 ---
@@ -34,8 +32,10 @@ ${params.raw_text}${params.human_note ? `\n一言メモ: ${params.human_note}` :
   "impact_score": 1〜5の整数（1=ニッチ・小市場、5=市場規模が大きい）,
   "difficulty_score": 1〜5の整数（1=すぐできる、5=実装がかなり重い）,
   "continuity_score": 1〜5の整数（1=単発コンテンツ、5=長期の事業の柱になりうる）,
-  "recommend_score": 0〜100の整数（impact・difficulty・continuityと意図・独自性を総合評価）,
-  "recommend_reason": "このストックをおすすめする具体的な理由（1〜2行）"
+  "recommend_score": 0〜100の整数（impact・difficulty・continuityと独自性を総合評価）,
+  "recommend_reason": "このストックをおすすめする具体的な理由（1〜2行）",
+  "intent": "商品化" | "検討中" | "メモ" のいずれか（本文の内容・熱量・具体性から判定。すぐ製品化できそうなら「商品化」、面白いが検討が必要なら「検討中」、記録・参考程度なら「メモ」）,
+  "related_project": "TrainerDocs" | "IdeaStock" | "その他" のいずれか（本文がパーソナルトレーナー向け書類SaaSに関連するなら「TrainerDocs」、思考整理・ストックツールに関連するなら「IdeaStock」、それ以外は「その他」）
 }
 
 JSONのみ返してください。コードブロック・説明文は不要です。`;

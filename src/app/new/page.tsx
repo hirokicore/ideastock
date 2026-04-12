@@ -4,27 +4,64 @@ import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sparkles, Save, RotateCcw, ChevronRight } from 'lucide-react';
 import Header from '@/components/layout/Header';
-import type { StockFormData, AnalysisResult } from '@/types';
+import type { StockFormData, AnalysisResult, Intent, RelatedProject } from '@/types';
 import { recommendBadgeStyle } from '@/lib/utils';
 
 type PageState = 'form' | 'analyzing' | 'review' | 'saving';
 
 const SOURCE_PLATFORMS = ['Claude', 'ChatGPT', 'Perplexity', 'Gemini', 'Memo'] as const;
-const INTENTS = ['商品化したい', '後で考えたい', 'ただのメモ'] as const;
-const RELATED_PROJECTS = ['TrainerDocs', 'IdeaStock', 'その他'] as const;
+const INTENTS: Intent[]          = ['商品化', '検討中', 'メモ'];
+const RELATED_PROJECTS: RelatedProject[] = ['TrainerDocs', 'IdeaStock', 'その他'];
+
+function intentStyle(v: string) {
+  if (v === '商品化') return 'bg-green-100 text-green-700';
+  if (v === '検討中')  return 'bg-yellow-100 text-yellow-700';
+  return 'bg-gray-100 text-gray-600';
+}
 
 function ScoreDots({ score }: { score: number }) {
   return (
     <div className="flex gap-1 items-center">
       {[1, 2, 3, 4, 5].map((i) => (
-        <div
-          key={i}
-          className={`w-2.5 h-2.5 rounded-full transition-colors ${
-            i <= score ? 'bg-brand-500' : 'bg-gray-200'
-          }`}
-        />
+        <div key={i} className={`w-2.5 h-2.5 rounded-full ${i <= score ? 'bg-brand-500' : 'bg-gray-200'}`} />
       ))}
       <span className="ml-1 text-sm text-gray-500">{score}/5</span>
+    </div>
+  );
+}
+
+function ToggleGroup<T extends string>({
+  label, options, value, onChange, styleFor,
+}: {
+  label: string;
+  options: T[];
+  value: T;
+  onChange: (v: T) => void;
+  styleFor?: (v: string) => string;
+}) {
+  return (
+    <div>
+      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{label}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((opt) => {
+          const active = opt === value;
+          const base = styleFor ? styleFor(opt) : '';
+          return (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => onChange(opt)}
+              className={`badge cursor-pointer transition-all border ${
+                active
+                  ? `${base} ring-2 ring-offset-1 ring-brand-400 font-semibold`
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-transparent'
+              }`}
+            >
+              {opt}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -40,8 +77,6 @@ export default function NewPage() {
     source_platform: '',
     raw_text: '',
     human_note: '',
-    intent: '',
-    related_project: '',
   });
 
   const handleChange = (
@@ -53,10 +88,7 @@ export default function NewPage() {
 
   const handleAnalyze = async (e: FormEvent) => {
     e.preventDefault();
-    if (!form.source_platform || !form.intent || !form.related_project) {
-      setError('すべての項目を入力してください');
-      return;
-    }
+    if (!form.source_platform) { setError('出所を選択してください'); return; }
     setState('analyzing');
     setError('');
 
@@ -104,17 +136,11 @@ export default function NewPage() {
         <div className="max-w-2xl mx-auto">
           {/* Breadcrumb */}
           <div className="flex items-center gap-1.5 text-sm text-gray-400 mb-6">
-            <span
-              className={state !== 'form' && state !== 'analyzing' ? 'text-gray-400' : 'text-brand-600 font-medium'}
-            >
-              入力
-            </span>
+            <span className={state === 'form' || state === 'analyzing' ? 'text-brand-600 font-medium' : ''}>入力</span>
             <ChevronRight size={14} />
-            <span className={state === 'review' || state === 'saving' ? 'text-brand-600 font-medium' : 'text-gray-400'}>
-              AI分析結果を確認
-            </span>
+            <span className={state === 'review' || state === 'saving' ? 'text-brand-600 font-medium' : ''}>AI分析結果を確認</span>
             <ChevronRight size={14} />
-            <span className={state === 'saving' ? 'text-brand-600 font-medium' : 'text-gray-400'}>保存</span>
+            <span className={state === 'saving' ? 'text-brand-600 font-medium' : ''}>保存</span>
           </div>
 
           {/* ── FORM ── */}
@@ -135,40 +161,18 @@ export default function NewPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="form-label">出所 <span className="text-red-500">*</span></label>
-                    <select name="source_platform" value={form.source_platform} onChange={handleChange} required className="form-select">
-                      <option value="">選択</option>
-                      {SOURCE_PLATFORMS.map((p) => (
-                        <option key={p} value={p}>{p}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="form-label">用途 <span className="text-red-500">*</span></label>
-                    <select name="intent" value={form.intent} onChange={handleChange} required className="form-select">
-                      <option value="">選択</option>
-                      {INTENTS.map((i) => (
-                        <option key={i} value={i}>{i}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="form-label">関連PJ <span className="text-red-500">*</span></label>
-                    <select name="related_project" value={form.related_project} onChange={handleChange} required className="form-select">
-                      <option value="">選択</option>
-                      {RELATED_PROJECTS.map((p) => (
-                        <option key={p} value={p}>{p}</option>
-                      ))}
-                    </select>
-                  </div>
+                <div>
+                  <label className="form-label">出所 <span className="text-red-500">*</span></label>
+                  <select name="source_platform" value={form.source_platform} onChange={handleChange} required className="form-select">
+                    <option value="">選択してください</option>
+                    {SOURCE_PLATFORMS.map((p) => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
-                  <label className="form-label">
-                    本文（コピペ） <span className="text-red-500">*</span>
-                  </label>
+                  <label className="form-label">本文（コピペ） <span className="text-red-500">*</span></label>
                   <textarea
                     name="raw_text"
                     value={form.raw_text}
@@ -187,32 +191,24 @@ export default function NewPage() {
                     value={form.human_note}
                     onChange={handleChange}
                     className="form-input"
-                    placeholder="例：これは来月中に着手したい"
+                    placeholder="例：来月中に着手したい、競合調査が必要"
                   />
                 </div>
+
+                <p className="text-xs text-gray-400">
+                  用途・関連プロジェクトは Claude が本文から自動判定します。確認画面で変更できます。
+                </p>
               </div>
 
               {error && (
-                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-                  {error}
-                </p>
+                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">{error}</p>
               )}
 
-              <button
-                type="submit"
-                disabled={state === 'analyzing'}
-                className="btn-primary w-full text-base py-4"
-              >
+              <button type="submit" disabled={state === 'analyzing'} className="btn-primary w-full text-base py-4">
                 {state === 'analyzing' ? (
-                  <>
-                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Claude が分析中...
-                  </>
+                  <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Claude が分析中...</>
                 ) : (
-                  <>
-                    <Sparkles size={18} />
-                    整理する
-                  </>
+                  <><Sparkles size={18} />整理する</>
                 )}
               </button>
             </form>
@@ -222,23 +218,35 @@ export default function NewPage() {
           {(state === 'review' || state === 'saving') && analysis && (
             <div className="space-y-6">
               {/* Entry summary */}
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-                <div className="flex flex-wrap gap-2 mb-2">
-                  <span className="badge bg-brand-100 text-brand-700">{form.source_platform}</span>
-                  <span className="badge bg-purple-100 text-purple-700">{form.intent}</span>
-                  <span className="badge bg-gray-100 text-gray-600">{form.related_project}</span>
-                </div>
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-2">
+                <span className="badge bg-brand-100 text-brand-700">{form.source_platform}</span>
                 <h2 className="text-lg font-bold text-gray-900">{form.title}</h2>
                 {form.human_note && (
-                  <p className="text-sm text-gray-500 mt-1 italic">「{form.human_note}」</p>
+                  <p className="text-sm text-gray-500 italic">「{form.human_note}」</p>
                 )}
               </div>
 
               {/* AI analysis */}
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
                 <div className="flex items-center gap-2 text-brand-700 font-semibold">
-                  <Sparkles size={18} />
-                  AI分析結果
+                  <Sparkles size={18} />AI分析結果
+                </div>
+
+                {/* Editable: intent + related_project */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pb-4 border-b border-gray-100">
+                  <ToggleGroup
+                    label="用途（変更可）"
+                    options={INTENTS}
+                    value={analysis.intent}
+                    onChange={(v) => setAnalysis((prev) => prev ? { ...prev, intent: v } : prev)}
+                    styleFor={intentStyle}
+                  />
+                  <ToggleGroup
+                    label="関連PJ（変更可）"
+                    options={RELATED_PROJECTS}
+                    value={analysis.related_project}
+                    onChange={(v) => setAnalysis((prev) => prev ? { ...prev, related_project: v } : prev)}
+                  />
                 </div>
 
                 {/* Summary */}
@@ -263,8 +271,7 @@ export default function NewPage() {
                   <ul className="space-y-1.5">
                     {analysis.idea_list.map((idea, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                        <span className="text-brand-400 font-bold mt-0.5">·</span>
-                        {idea}
+                        <span className="text-brand-400 font-bold mt-0.5">·</span>{idea}
                       </li>
                     ))}
                   </ul>
@@ -297,9 +304,7 @@ export default function NewPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 pt-1">
-                    <span
-                      className={`text-2xl font-bold px-4 py-1.5 rounded-xl ${recommendBadgeStyle(analysis.recommend_score)}`}
-                    >
+                    <span className={`text-2xl font-bold px-4 py-1.5 rounded-xl ${recommendBadgeStyle(analysis.recommend_score)}`}>
                       {analysis.recommend_score}点
                     </span>
                     <p className="text-sm text-gray-600 leading-relaxed">{analysis.recommend_reason}</p>
@@ -308,9 +313,7 @@ export default function NewPage() {
               </div>
 
               {error && (
-                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-                  {error}
-                </p>
+                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">{error}</p>
               )}
 
               <div className="flex gap-3">
@@ -319,24 +322,13 @@ export default function NewPage() {
                   disabled={state === 'saving'}
                   className="btn-secondary flex-1"
                 >
-                  <RotateCcw size={16} />
-                  やり直す
+                  <RotateCcw size={16} />やり直す
                 </button>
-                <button
-                  onClick={handleSave}
-                  disabled={state === 'saving'}
-                  className="btn-primary flex-1"
-                >
+                <button onClick={handleSave} disabled={state === 'saving'} className="btn-primary flex-1">
                   {state === 'saving' ? (
-                    <>
-                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      保存中...
-                    </>
+                    <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />保存中...</>
                   ) : (
-                    <>
-                      <Save size={16} />
-                      保存する
-                    </>
+                    <><Save size={16} />保存する</>
                   )}
                 </button>
               </div>

@@ -1,5 +1,5 @@
 export type SourcePlatform = 'Claude' | 'ChatGPT' | 'Perplexity' | 'Gemini' | 'Memo';
-export type Intent = '商品化したい' | '後で考えたい' | 'ただのメモ';
+export type Intent = '商品化' | '検討中' | 'メモ';
 export type RelatedProject = 'TrainerDocs' | 'IdeaStock' | 'その他';
 
 export type IdeaStock = {
@@ -34,6 +34,8 @@ export type AnalysisResult = {
   continuity_score: number;
   recommend_score: number;
   recommend_reason: string;
+  intent: Intent;
+  related_project: RelatedProject;
 };
 
 export type StockFormData = {
@@ -41,6 +43,4 @@ export type StockFormData = {
   source_platform: SourcePlatform | '';
   raw_text: string;
   human_note: string;
-  intent: Intent | '';
-  related_project: RelatedProject | '';
 };
