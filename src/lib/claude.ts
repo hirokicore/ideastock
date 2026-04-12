@@ -1,5 +1,6 @@
-import Anthropic from '@anthropic-ai/sdk';
 import type { AnalysisResult } from '@/types';
+
+const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 
 export async function analyzeStock(params: {
   title: string;
@@ -12,12 +13,6 @@ export async function analyzeStock(params: {
   if (!apiKey) {
     throw new Error('ANTHROPIC_API_KEY が設定されていません。Vercel の環境変数を確認してください。');
   }
-
-  const client = new Anthropic({
-    apiKey,
-    timeout: 50_000, // Vercel Hobby の最大実行時間 60s に余裕を持たせた 50s
-    maxRetries: 0,
-  });
 
   const prompt = `あなたは個人開発者の思考ストックを整理するAIアシスタントです。
 以下の入力テキストを分析し、必ず下記のJSONフォーマットのみで返してください。
@@ -45,18 +40,35 @@ ${params.raw_text}${params.human_note ? `\n一言メモ: ${params.human_note}` :
 
 JSONのみ返してください。コードブロック・説明文は不要です。`;
 
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 2048,
-    messages: [{ role: 'user', content: prompt }],
+  const res = await fetch(ANTHROPIC_API_URL, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2048,
+      messages: [{ role: 'user', content: prompt }],
+    }),
   });
 
-  const text = response.content[0].type === 'text' ? response.content[0].text : '';
+  if (!res.ok) {
+    const errBody = await res.text();
+    throw new Error(`Anthropic API error ${res.status}: ${errBody}`);
+  }
+
+  const data = await res.json() as {
+    content: { type: string; text: string }[];
+  };
+
+  const text = data.content.find((c) => c.type === 'text')?.text ?? '';
   const cleaned = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
 
   try {
     return JSON.parse(cleaned) as AnalysisResult;
   } catch {
-    throw new Error(`Claude の応答を JSON としてパースできませんでした: ${cleaned.slice(0, 200)}`);
+    throw new Error(`レスポンスを JSON としてパースできませんでした: ${cleaned.slice(0, 200)}`);
   }
 }
