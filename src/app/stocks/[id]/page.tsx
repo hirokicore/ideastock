@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import Header from '@/components/layout/Header';
+import StockMeta from './StockMeta';
 import type { IdeaStock } from '@/types';
 import { recommendBadgeStyle, formatDate } from '@/lib/utils';
 
@@ -18,12 +19,6 @@ function ScoreDots({ score }: { score: number }) {
       <span className="ml-1 text-sm text-gray-500">{score} / 5</span>
     </div>
   );
-}
-
-function intentStyle(intent: string) {
-  if (intent === '商品化') return 'bg-green-100 text-green-700';
-  if (intent === '検討中')  return 'bg-yellow-100 text-yellow-700';
-  return 'bg-gray-100 text-gray-600';
 }
 
 export default async function StockDetailPage({
@@ -61,20 +56,15 @@ export default async function StockDetailPage({
           </Link>
 
           {/* Header card */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-3">
-            <div className="flex flex-wrap gap-2">
-              <span className="badge bg-brand-50 text-brand-600">{stock.source_platform}</span>
-              <span className={`badge ${intentStyle(stock.intent)}`}>{stock.intent}</span>
-              <span className="badge bg-gray-100 text-gray-500">{stock.related_project}</span>
-              <span className="ml-auto text-xs text-gray-400">{formatDate(stock.created_at)}</span>
-            </div>
-            <h1 className="text-xl font-bold text-gray-900 leading-snug">{stock.title}</h1>
-            {stock.human_note && (
-              <p className="text-sm text-gray-500 italic border-l-2 border-brand-200 pl-3">
-                {stock.human_note}
-              </p>
-            )}
-          </div>
+          <StockMeta
+            stockId={stock.id}
+            initialIntent={stock.intent}
+            initialRelatedProject={stock.related_project}
+            sourcePlatform={stock.source_platform}
+            title={stock.title}
+            humanNote={stock.human_note}
+            createdAt={formatDate(stock.created_at)}
+          />
 
           {/* AI Analysis */}
           <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-7">
