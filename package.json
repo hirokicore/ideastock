@@ -6,6 +6,7 @@
     "apps/*"
   ],
   "scripts": {
+    "build": "npm run build --workspace=apps/ideastock",
     "dev:ideastock": "npm run dev --workspace=apps/ideastock",
     "dev:business-plan": "npm run dev --workspace=apps/business-plan",
     "build:ideastock": "npm run build --workspace=apps/ideastock",

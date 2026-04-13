@@ -6,5 +6,7 @@ out/
 .DS_Store
 *.pem
 tsconfig.tsbuildinfo
+next-env.d.ts
+.next/
 apps/*/node_modules/
 apps/*/.next/
