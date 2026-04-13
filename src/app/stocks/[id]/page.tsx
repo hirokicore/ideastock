@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import Header from '@/components/layout/Header';
 import StockMeta from './StockMeta';
+import RefinePanel from './RefinePanel';
 import type { IdeaStock } from '@/types';
 import { recommendBadgeStyle, formatDate } from '@/lib/utils';
 
@@ -169,6 +170,22 @@ export default async function StockDetailPage({
                 </div>
               </section>
             )}
+          </div>
+
+          {/* Refine */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-6">
+            <RefinePanel
+              stockId={stock.id}
+              stockTitle={stock.title}
+              sourcePlatform={stock.source_platform}
+              rawText={stock.raw_text}
+              currentScores={{
+                impact: stock.impact_score,
+                difficulty: stock.difficulty_score,
+                continuity: stock.continuity_score,
+                recommend: stock.recommend_score,
+              }}
+            />
           </div>
 
           {/* Raw text (collapsible) */}
