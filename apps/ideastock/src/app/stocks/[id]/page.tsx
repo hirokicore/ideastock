@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Link2, GitMerge } from 'lucide-react';
+import { ArrowLeft, Link2, GitMerge, Briefcase } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import Header from '@/components/layout/Header';
 import StockMeta from './StockMeta';
@@ -79,6 +79,28 @@ export default async function StockDetailPage({
             humanNote={stock.human_note}
             createdAt={formatDate(stock.created_at)}
           />
+
+          {/* Send to business-plan */}
+          {(() => {
+            const bp = process.env.NEXT_PUBLIC_BUSINESS_PLAN_URL ?? 'http://localhost:3001';
+            const qs = new URLSearchParams({
+              source_idea_id: stock.id,
+              title: stock.title,
+              summary: stock.summary ?? '',
+              tags: JSON.stringify(stock.tags ?? []),
+              idea_list: JSON.stringify(stock.idea_list ?? []),
+              recommend_score: String(stock.recommend_score ?? ''),
+            });
+            return (
+              <a
+                href={`${bp}/new?${qs.toString()}`}
+                className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-2xl border border-brand-300 text-brand-600 font-semibold text-sm hover:bg-brand-50 transition-colors"
+              >
+                <Briefcase size={16} />
+                事業計画に送る
+              </a>
+            );
+          })()}
 
           {/* AI Analysis */}
           <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-7">

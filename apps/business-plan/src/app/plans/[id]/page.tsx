@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Target, Lightbulb, DollarSign, Map } from 'lucide-react';
+import { ArrowLeft, Target, Lightbulb, DollarSign, Map, ExternalLink } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import Header from '@/components/layout/Header';
 import StatusSelect from './StatusSelect';
@@ -55,9 +55,15 @@ export default async function PlanDetailPage({
             </div>
 
             {plan.source_idea_id && (
-              <p className="text-xs text-gray-400">
-                元アイデアID: <span className="font-mono">{plan.source_idea_id}</span>
-              </p>
+              <a
+                href={`https://ideastock.vercel.app/stocks/${plan.source_idea_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-brand-600 hover:text-brand-700 transition-colors"
+              >
+                <ExternalLink size={12} />
+                元のアイデアを見る
+              </a>
             )}
           </div>
 
