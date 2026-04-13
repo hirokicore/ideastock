@@ -11,7 +11,10 @@
     "dev:business-plan": "npm run dev --workspace=apps/business-plan",
     "build:ideastock": "npm run build --workspace=apps/ideastock",
     "build:business-plan": "npm run build --workspace=apps/business-plan",
+    "dev:execution": "npm run dev --workspace=apps/execution",
+    "build:execution": "npm run build --workspace=apps/execution",
     "lint:ideastock": "npm run lint --workspace=apps/ideastock",
-    "lint:business-plan": "npm run lint --workspace=apps/business-plan"
+    "lint:business-plan": "npm run lint --workspace=apps/business-plan",
+    "lint:execution": "npm run lint --workspace=apps/execution"
   }
 }

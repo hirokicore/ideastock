@@ -4,6 +4,7 @@ import { ArrowLeft, Users, Target, DollarSign, BarChart2, TrendingUp, Map, Exter
 import { createClient } from '@/lib/supabase/server';
 import Header from '@/components/layout/Header';
 import StatusSelect from '../StatusSelect';
+import GenerateTasksButton from '../GenerateTasksButton';
 import FullPlanForm from './FullPlanForm';
 import type { BusinessPlan } from '@/types';
 import { recommendBadgeStyle } from '@/lib/utils';
@@ -54,6 +55,7 @@ export default async function FullPlanPage({
 
   // plan_type === 'full': show full detail view
   const snap = plan.idea_snapshot;
+  const executionUrl = process.env.NEXT_PUBLIC_EXECUTION_URL ?? 'http://localhost:3002';
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -168,6 +170,9 @@ export default async function FullPlanPage({
               )}
             </div>
           )}
+
+          {/* Generate tasks */}
+          <GenerateTasksButton planId={plan.id} executionUrl={executionUrl} />
 
         </div>
       </main>

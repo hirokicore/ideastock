@@ -4,6 +4,7 @@ import { ArrowLeft, Users, Zap, Megaphone, DollarSign, ExternalLink, ChevronRigh
 import { createClient } from '@/lib/supabase/server';
 import Header from '@/components/layout/Header';
 import StatusSelect from './StatusSelect';
+import GenerateTasksButton from './GenerateTasksButton';
 import type { BusinessPlan } from '@/types';
 import { recommendBadgeStyle } from '@/lib/utils';
 
@@ -69,6 +70,7 @@ export default async function PlanDetailPage({
   }
 
   const snap = plan.idea_snapshot;
+  const executionUrl = process.env.NEXT_PUBLIC_EXECUTION_URL ?? 'http://localhost:3002';
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -144,6 +146,9 @@ export default async function PlanDetailPage({
               )}
             </div>
           )}
+
+          {/* Generate tasks */}
+          <GenerateTasksButton planId={plan.id} executionUrl={executionUrl} />
 
           {/* CTA: Go to full plan */}
           <Link
