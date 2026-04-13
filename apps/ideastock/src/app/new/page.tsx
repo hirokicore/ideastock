@@ -4,19 +4,27 @@ import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Sparkles, Save, RotateCcw, ChevronRight, GitMerge, Link2, PlusCircle, Loader2 } from 'lucide-react';
 import Header from '@/components/layout/Header';
-import type { StockFormData, AnalysisResult, Intent, RelatedProject, SimilarCandidate } from '@/types';
+import type { StockFormData, AnalysisResult, Intent, RelatedProject, OperationType, SimilarCandidate } from '@/types';
 import { recommendBadgeStyle } from '@/lib/utils';
 
 type PageState = 'form' | 'analyzing' | 'review' | 'checking' | 'saving';
 type MergeChoice = 'merge' | 'link' | 'new';
 
 const SOURCE_PLATFORMS = ['Claude', 'ChatGPT', 'Perplexity', 'Gemini', 'Memo'] as const;
-const INTENTS: Intent[]          = ['商品化', '検討中', 'メモ'];
+const INTENTS: Intent[]             = ['商品化', '検討中', 'メモ'];
 const RELATED_PROJECTS: RelatedProject[] = ['TrainerDocs', 'IdeaStock', 'その他'];
+const OPERATION_TYPES: OperationType[] = ['放置型', '営業型', 'ハイブリッド'];
 
 function intentStyle(v: string) {
   if (v === '商品化') return 'bg-green-100 text-green-700';
   if (v === '検討中')  return 'bg-yellow-100 text-yellow-700';
+  return 'bg-gray-100 text-gray-600';
+}
+
+function operationTypeStyle(v: string) {
+  if (v === '放置型')    return 'bg-emerald-100 text-emerald-700';
+  if (v === '営業型')    return 'bg-orange-100 text-orange-700';
+  if (v === 'ハイブリッド') return 'bg-sky-100 text-sky-700';
   return 'bg-gray-100 text-gray-600';
 }
 
@@ -420,7 +428,7 @@ export default function NewPage() {
                   <Sparkles size={18} />AI分析結果
                 </div>
 
-                {/* Editable: intent + related_project */}
+                {/* Editable: intent + related_project + operation_type */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pb-4 border-b border-gray-100">
                   <ToggleGroup
                     label="用途（変更可）"
@@ -434,6 +442,13 @@ export default function NewPage() {
                     options={RELATED_PROJECTS}
                     value={analysis.related_project}
                     onChange={(v) => setAnalysis((prev) => prev ? { ...prev, related_project: v } : prev)}
+                  />
+                  <ToggleGroup
+                    label="運用タイプ（変更可）"
+                    options={OPERATION_TYPES}
+                    value={analysis.operation_type}
+                    onChange={(v) => setAnalysis((prev) => prev ? { ...prev, operation_type: v } : prev)}
+                    styleFor={operationTypeStyle}
                   />
                 </div>
 

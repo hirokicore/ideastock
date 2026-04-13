@@ -6,8 +6,15 @@ import Header from '@/components/layout/Header';
 import StockMeta from './StockMeta';
 import RefinePanel from './RefinePanel';
 import SimilarPanel from './SimilarPanel';
-import type { IdeaStock } from '@/types';
+import type { IdeaStock, OperationType } from '@/types';
 import { recommendBadgeStyle, formatDate } from '@/lib/utils';
+
+function operationTypeStyle(v: OperationType) {
+  if (v === '放置型')    return 'bg-emerald-100 text-emerald-700';
+  if (v === '営業型')    return 'bg-orange-100 text-orange-700';
+  if (v === 'ハイブリッド') return 'bg-sky-100 text-sky-700';
+  return 'bg-gray-100 text-gray-600';
+}
 
 function ScoreDots({ score, max = 5 }: { score: number; max?: number }) {
   return (
@@ -193,6 +200,16 @@ export default async function StockDetailPage({
                     <p className="text-sm text-gray-600 leading-relaxed pt-2">{stock.recommend_reason}</p>
                   )}
                 </div>
+              </section>
+            )}
+
+            {/* Operation type */}
+            {stock.operation_type && (
+              <section className="border-t border-gray-100 pt-5">
+                <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">運用タイプ</h2>
+                <span className={`badge text-sm px-3 py-1 ${operationTypeStyle(stock.operation_type)}`}>
+                  {stock.operation_type}
+                </span>
               </section>
             )}
           </div>

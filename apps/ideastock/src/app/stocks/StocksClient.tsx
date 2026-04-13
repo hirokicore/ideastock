@@ -40,6 +40,13 @@ function intentStyle(intent: string) {
   return 'bg-gray-100 text-gray-600';
 }
 
+function operationTypeStyle(v: string) {
+  if (v === '放置型')    return 'bg-emerald-100 text-emerald-700';
+  if (v === '営業型')    return 'bg-orange-100 text-orange-700';
+  if (v === 'ハイブリッド') return 'bg-sky-100 text-sky-700';
+  return 'bg-gray-100 text-gray-600';
+}
+
 function priorityStyle(v: string) {
   if (v === '今すぐ') return 'bg-red-100 text-red-700';
   if (v === '仕込み') return 'bg-blue-100 text-blue-700';
@@ -247,6 +254,9 @@ export default function StocksClient({ initialStocks }: { initialStocks: IdeaSto
                     <span className={`badge ${timeSlotStyle(stock.time_slot)}`}>{stock.time_slot}</span>
                   )}
                   <span className="badge bg-gray-100 text-gray-500">{stock.related_project}</span>
+                  {stock.operation_type && (
+                    <span className={`badge ${operationTypeStyle(stock.operation_type)}`}>{stock.operation_type}</span>
+                  )}
                 </div>
 
                 {/* Title */}

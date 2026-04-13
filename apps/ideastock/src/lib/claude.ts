@@ -1,4 +1,4 @@
-import type { AnalysisResult, IdeaStock, RefineResult, Variation } from '@/types';
+import type { AnalysisResult, IdeaStock, OperationType, RefineResult, Variation } from '@/types';
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 
@@ -67,7 +67,8 @@ ${params.raw_text}${params.human_note ? `\n一言メモ: ${params.human_note}` :
   "priority_category": "今すぐ" | "仕込み" | "挑戦" のいずれか（今すぐ=すぐ作ると長期メリット大・市場タイミングが重要、仕込み=条件が揃ったら一気にやる・リソース整い次第、挑戦=難易度高いが夢がある・先行投資型）,
   "time_slot": "今月" | "3ヶ月以内" | "半年〜" | "いつか" のいずれか（priority_categoryとdifficulty_scoreを総合して判定）,
   "spread_score": 1〜3の整数（1=個人・クローズド利用、2=口コミ・SNS展開可能、3=バイラル・大量拡散が狙える）,
-  "cost_score": 1〜3の整数（1=低コストですぐ着手可能、2=中程度の開発コスト、3=チーム・資金が必要な高コスト）
+  "cost_score": 1〜3の整数（1=低コストですぐ着手可能、2=中程度の開発コスト、3=チーム・資金が必要な高コスト）,
+  "operation_type": "放置型" | "営業型" | "ハイブリッド" のいずれか（放置型=作ったら勝手に回る・SaaS/デジタルコンテンツ/自動化ツール、営業型=継続的な営業・クライアント接触が必要、ハイブリッド=初期は営業が必要だが軌道に乗ったら放置可能）
 }
 
 JSONのみ返してください。コードブロック・説明文は不要です。`;
@@ -125,7 +126,8 @@ ${stock.raw_text.slice(0, 3000)}
   "priority_category": "今すぐ" | "仕込み" | "挑戦" のいずれか,
   "time_slot": "今月" | "3ヶ月以内" | "半年〜" | "いつか" のいずれか,
   "spread_score": 改善後の拡散性（1〜3の整数）,
-  "cost_score": 改善後の実装コスト（1〜3の整数）
+  "cost_score": 改善後の実装コスト（1〜3の整数）,
+  "operation_type": "放置型" | "営業型" | "ハイブリッド" のいずれか（放置型=作ったら勝手に回る・SaaS/デジタルコンテンツ/自動化ツール、営業型=継続的な営業・クライアント接触が必要、ハイブリッド=初期は営業が必要だが軌道に乗ったら放置可能）
 }
 
 JSONのみ返してください。コードブロック・説明文は不要です。`;

@@ -3,6 +3,7 @@ export type Intent = '商品化' | '検討中' | 'メモ';
 export type RelatedProject = 'TrainerDocs' | 'IdeaStock' | 'その他';
 export type PriorityCategory = '今すぐ' | '仕込み' | '挑戦';
 export type TimeSlot = '今月' | '3ヶ月以内' | '半年〜' | 'いつか';
+export type OperationType = '放置型' | '営業型' | 'ハイブリッド';
 
 export type IdeaStock = {
   id: string;
@@ -27,6 +28,7 @@ export type IdeaStock = {
   recommend_reason?: string | null;
   spread_score?: number | null;
   cost_score?: number | null;
+  operation_type?: OperationType | null;
   related_ids?: string[];
   variations?: Variation[];
   created_at: string;
@@ -67,6 +69,7 @@ export type AnalysisResult = {
   time_slot: TimeSlot;
   spread_score: number;
   cost_score: number;
+  operation_type: OperationType;
 };
 
 export type RefineResult = {
@@ -93,6 +96,7 @@ export type RefineResult = {
   time_slot: TimeSlot;
   spread_score: number;
   cost_score: number;
+  operation_type: OperationType;
 };
 
 export type StockFormData = {
