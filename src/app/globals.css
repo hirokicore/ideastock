@@ -4,34 +4,77 @@
 
 @layer base {
   body {
-    background-color: #f2f0eb;
-    color: #2a2a2a;
+    background-color: #1a1826;
+    color: #e4e2f2;
+  }
+
+  /* ── dark surface overrides ── */
+  .bg-white          { background-color: #252240 !important; }
+  .bg-gray-50        { background-color: #1f1d38 !important; }
+  .bg-gray-100       { background-color: #2e2b50 !important; }
+  .bg-gray-200       { background-color: #3a3660 !important; }
+
+  .border-gray-100   { border-color: #302d55 !important; }
+  .border-gray-200   { border-color: #3a3660 !important; }
+  .border-gray-300   { border-color: #4a4678 !important; }
+
+  .text-gray-900     { color: #eae8f8 !important; }
+  .text-gray-800     { color: #d8d5f0 !important; }
+  .text-gray-700     { color: #c4c0e4 !important; }
+  .text-gray-600     { color: #a8a4cc !important; }
+  .text-gray-500     { color: #8e8ab4 !important; }
+  .text-gray-400     { color: #726e98 !important; }
+  .text-gray-300     { color: #58547c !important; }
+
+  /* Form inputs on dark bg */
+  input, textarea, select {
+    background-color: #1f1d38;
+    color: #e4e2f2;
+    border-color: #4a4678;
+  }
+  input::placeholder, textarea::placeholder {
+    color: #726e98;
   }
 }
 
 @layer components {
   .form-label {
-    @apply block text-sm font-medium text-gray-700 mb-1.5;
+    @apply block text-sm font-medium mb-1.5;
+    color: #c4c0e4;
   }
   .form-input {
-    @apply w-full px-4 py-3 border border-gray-300 rounded-xl text-sm
-           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition;
+    @apply w-full px-4 py-3 rounded-xl text-sm border
+           focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition;
+    background-color: #1f1d38;
+    color: #e4e2f2;
+    border-color: #4a4678;
   }
   .form-textarea {
-    @apply w-full px-4 py-3 border border-gray-300 rounded-xl text-sm
-           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition resize-none;
+    @apply w-full px-4 py-3 rounded-xl text-sm border
+           focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition resize-none;
+    background-color: #1f1d38;
+    color: #e4e2f2;
+    border-color: #4a4678;
   }
   .form-select {
-    @apply w-full px-4 py-3 border border-gray-300 rounded-xl text-sm
-           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition bg-white;
+    @apply w-full px-4 py-3 rounded-xl text-sm border
+           focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 transition;
+    background-color: #1f1d38;
+    color: #e4e2f2;
+    border-color: #4a4678;
   }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700
+    @apply inline-flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-400
            disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl transition-colors;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200
-           text-gray-700 font-medium py-3 px-6 rounded-xl transition-colors;
+    @apply inline-flex items-center justify-center gap-2
+           font-medium py-3 px-6 rounded-xl transition-colors;
+    background-color: #2e2b50;
+    color: #c4c0e4;
+  }
+  .btn-secondary:hover {
+    background-color: #3a3660;
   }
   .badge {
     @apply inline-block text-xs font-medium px-2.5 py-0.5 rounded-full;
