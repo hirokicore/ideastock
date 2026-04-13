@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import Header from '@/components/layout/Header';
 import StockMeta from './StockMeta';
 import RefinePanel from './RefinePanel';
+import SimilarPanel from './SimilarPanel';
 import type { IdeaStock } from '@/types';
 import { recommendBadgeStyle, formatDate } from '@/lib/utils';
 
@@ -195,6 +196,17 @@ export default async function StockDetailPage({
                 continuity: stock.continuity_score,
                 recommend: stock.recommend_score,
               }}
+            />
+          </div>
+
+          {/* Similar search */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-6">
+            <SimilarPanel
+              stockId={stock.id}
+              title={stock.title}
+              summary={stock.summary ?? null}
+              tags={stock.tags ?? []}
+              alreadyLinkedIds={stock.related_ids ?? []}
             />
           </div>
 
