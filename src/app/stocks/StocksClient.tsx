@@ -275,29 +275,29 @@ export default function StocksClient({ initialStocks }: { initialStocks: IdeaSto
 
                 {/* Scores */}
                 {stock.recommend_score != null && (
-                  <div className="border-t border-gray-100 pt-3 flex items-center justify-between gap-3">
-                    <div className="flex gap-3 text-xs text-gray-400 flex-wrap">
-                      <div className="flex items-center gap-1.5">
-                        影響<ScorePips score={stock.impact_score ?? 0} />
+                  <div className="border-t border-gray-100 pt-3 flex items-center justify-between gap-2">
+                    <div className="flex gap-2 text-xs text-gray-400 overflow-hidden">
+                      <div className="flex items-center gap-1">
+                        影<ScorePips score={stock.impact_score ?? 0} />
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        難度<ScorePips score={stock.difficulty_score ?? 0} />
+                      <div className="flex items-center gap-1">
+                        難<ScorePips score={stock.difficulty_score ?? 0} />
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        継続<ScorePips score={stock.continuity_score ?? 0} />
+                      <div className="flex items-center gap-1">
+                        継<ScorePips score={stock.continuity_score ?? 0} />
                       </div>
                       {stock.spread_score != null && (
-                        <div className="flex items-center gap-1.5">
-                          拡散<ScorePips score={stock.spread_score} max={3} />
+                        <div className="flex items-center gap-1">
+                          拡<ScorePips score={stock.spread_score} max={3} />
                         </div>
                       )}
                       {stock.cost_score != null && (
-                        <div className="flex items-center gap-1.5">
-                          コスト<ScorePips score={stock.cost_score} max={3} />
+                        <div className="flex items-center gap-1">
+                          費<ScorePips score={stock.cost_score} max={3} />
                         </div>
                       )}
                     </div>
-                    <span className={`inline-flex items-center justify-center min-w-[3.25rem] tabular-nums text-sm font-bold px-3 py-1 rounded-full ${recommendBadgeStyle(stock.recommend_score)}`}>
+                    <span className={`inline-flex items-center justify-center flex-shrink-0 min-w-[3.25rem] tabular-nums text-sm font-bold px-3 py-1 rounded-full ${recommendBadgeStyle(stock.recommend_score)}`}>
                       {stock.recommend_score}点
                     </span>
                   </div>
