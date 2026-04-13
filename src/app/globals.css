@@ -9,24 +9,58 @@
   }
 
   /* ── dark surface overrides ── */
-  .bg-white          { background-color: #252240 !important; }
-  .bg-gray-50        { background-color: #1f1d38 !important; }
-  .bg-gray-100       { background-color: #2e2b50 !important; }
-  .bg-gray-200       { background-color: #3a3660 !important; }
+  .bg-white        { background-color: #252240 !important; }
+  .bg-gray-50      { background-color: #1f1d38 !important; }
+  .bg-gray-100     { background-color: #2e2b50 !important; }
+  .bg-gray-200     { background-color: #3a3660 !important; }
 
-  .border-gray-100   { border-color: #302d55 !important; }
-  .border-gray-200   { border-color: #3a3660 !important; }
-  .border-gray-300   { border-color: #4a4678 !important; }
+  .border-gray-100 { border-color: #302d55 !important; }
+  .border-gray-200 { border-color: #3a3660 !important; }
+  .border-gray-300 { border-color: #4a4678 !important; }
 
-  .text-gray-900     { color: #eae8f8 !important; }
-  .text-gray-800     { color: #d8d5f0 !important; }
-  .text-gray-700     { color: #c4c0e4 !important; }
-  .text-gray-600     { color: #a8a4cc !important; }
-  .text-gray-500     { color: #8e8ab4 !important; }
-  .text-gray-400     { color: #726e98 !important; }
-  .text-gray-300     { color: #58547c !important; }
+  .text-gray-900   { color: #eae8f8 !important; }
+  .text-gray-800   { color: #d8d5f0 !important; }
+  .text-gray-700   { color: #c4c0e4 !important; }
+  .text-gray-600   { color: #a8a4cc !important; }
+  .text-gray-500   { color: #8e8ab4 !important; }
+  .text-gray-400   { color: #726e98 !important; }
+  .text-gray-300   { color: #58547c !important; }
 
-  /* Form inputs on dark bg */
+  /* ── badge color overrides (dark mode) ── */
+
+  /* 赤: priority A / time slot 今月 */
+  .bg-red-100      { background-color: #2a0e10 !important; }
+  .bg-red-50       { background-color: #220c0e !important; }
+  .text-red-700    { color: #c0605a !important; }
+  .text-red-600    { color: #b85a54 !important; }
+
+  /* オレンジ: time slot 3ヶ月以内 → チカチカを防ぐ落ち着いた色 */
+  .bg-orange-50    { background-color: #221508 !important; }
+  .text-orange-600 { color: #a06830 !important; }
+
+  /* 黄: intent 検討中 / time slot 半年〜 / recommend 中 */
+  .bg-yellow-100   { background-color: #221e08 !important; }
+  .bg-yellow-50    { background-color: #1c1906 !important; }
+  .text-yellow-700 { color: #9e8e30 !important; }
+
+  /* 緑: intent 商品化 / recommend 高 */
+  .bg-green-100    { background-color: #0a2018 !important; }
+  .text-green-700  { color: #4a9465 !important; }
+
+  /* 青: priority B */
+  .bg-blue-100     { background-color: #0e1e30 !important; }
+  .text-blue-700   { color: #4878a8 !important; }
+
+  /* 紫: priority C */
+  .bg-purple-100   { background-color: #1a0e28 !important; }
+  .text-purple-700 { color: #7858a8 !important; }
+
+  /* indigo: product formats */
+  .bg-indigo-50         { background-color: #141230 !important; }
+  .text-indigo-700      { color: #6860b0 !important; }
+  .border-indigo-100    { border-color: #2a2660 !important; }
+
+  /* Form inputs */
   input, textarea, select {
     background-color: #1f1d38;
     color: #e4e2f2;
@@ -76,7 +110,8 @@
   .btn-secondary:hover {
     background-color: #3a3660;
   }
+  /* badge: inline-flex で中央揃えを保証 */
   .badge {
-    @apply inline-block text-xs font-medium px-2.5 py-0.5 rounded-full;
+    @apply inline-flex items-center justify-center text-xs font-medium px-2.5 py-0.5 rounded-full;
   }
 }
