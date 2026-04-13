@@ -7,16 +7,16 @@ import StockMeta from './StockMeta';
 import type { IdeaStock } from '@/types';
 import { recommendBadgeStyle, formatDate } from '@/lib/utils';
 
-function ScoreDots({ score }: { score: number }) {
+function ScoreDots({ score, max = 5 }: { score: number; max?: number }) {
   return (
     <div className="flex gap-1.5 items-center">
-      {[1, 2, 3, 4, 5].map((i) => (
+      {Array.from({ length: max }, (_, i) => (
         <div
           key={i}
-          className={`w-3 h-3 rounded-full ${i <= score ? 'bg-brand-500' : 'bg-gray-200'}`}
+          className={`w-3 h-3 rounded-full ${i < score ? 'bg-brand-500' : 'bg-gray-200'}`}
         />
       ))}
-      <span className="ml-1 text-sm text-gray-500">{score} / 5</span>
+      <span className="ml-1 text-sm text-gray-500">{score} / {max}</span>
     </div>
   );
 }
@@ -60,6 +60,8 @@ export default async function StockDetailPage({
             stockId={stock.id}
             initialIntent={stock.intent}
             initialRelatedProject={stock.related_project}
+            initialPriorityCategory={stock.priority_category}
+            initialTimeSlot={stock.time_slot}
             sourcePlatform={stock.source_platform}
             title={stock.title}
             humanNote={stock.human_note}
@@ -119,25 +121,43 @@ export default async function StockDetailPage({
 
             {/* Scores */}
             {stock.recommend_score != null && (
-              <section className="border-t border-gray-100 pt-6 space-y-5">
-                <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">スコア</h2>
+              <section className="border-t border-gray-100 pt-6 space-y-4">
+                <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">スコア（5段階）</h2>
 
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 gap-3.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 w-24">インパクト</span>
+                    <span className="text-sm text-gray-600 w-28">インパクト</span>
                     <ScoreDots score={stock.impact_score ?? 0} />
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 w-24">実現難易度</span>
+                    <span className="text-sm text-gray-600 w-28">実現難易度</span>
                     <ScoreDots score={stock.difficulty_score ?? 0} />
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 w-24">継続性</span>
+                    <span className="text-sm text-gray-600 w-28">継続性</span>
                     <ScoreDots score={stock.continuity_score ?? 0} />
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4 pt-1">
+                {(stock.spread_score != null || stock.cost_score != null) && (
+                  <div className="grid grid-cols-1 gap-3.5 pt-3 border-t border-gray-100">
+                    <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">スコア（3段階）</h2>
+                    {stock.spread_score != null && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600 w-28">拡散性</span>
+                        <ScoreDots score={stock.spread_score} max={3} />
+                      </div>
+                    )}
+                    {stock.cost_score != null && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600 w-28">実装コスト</span>
+                        <ScoreDots score={stock.cost_score} max={3} />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex items-start gap-4 pt-2">
                   <span
                     className={`text-3xl font-bold px-5 py-2 rounded-xl flex-shrink-0 ${recommendBadgeStyle(stock.recommend_score)}`}
                   >

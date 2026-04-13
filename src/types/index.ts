@@ -1,6 +1,8 @@
 export type SourcePlatform = 'Claude' | 'ChatGPT' | 'Perplexity' | 'Gemini' | 'Memo';
 export type Intent = '商品化' | '検討中' | 'メモ';
 export type RelatedProject = 'TrainerDocs' | 'IdeaStock' | 'その他';
+export type PriorityCategory = 'A' | 'B' | 'C';
+export type TimeSlot = '今月' | '3ヶ月以内' | '半年〜' | 'いつか';
 
 export type IdeaStock = {
   id: string;
@@ -11,6 +13,8 @@ export type IdeaStock = {
   human_note?: string | null;
   intent: Intent;
   related_project: RelatedProject;
+  priority_category?: PriorityCategory | null;
+  time_slot?: TimeSlot | null;
   // AI generated
   summary?: string | null;
   tags: string[];
@@ -21,6 +25,8 @@ export type IdeaStock = {
   continuity_score?: number | null;
   recommend_score?: number | null;
   recommend_reason?: string | null;
+  spread_score?: number | null;
+  cost_score?: number | null;
   created_at: string;
 };
 
@@ -36,6 +42,10 @@ export type AnalysisResult = {
   recommend_reason: string;
   intent: Intent;
   related_project: RelatedProject;
+  priority_category: PriorityCategory;
+  time_slot: TimeSlot;
+  spread_score: number;
+  cost_score: number;
 };
 
 export type StockFormData = {
