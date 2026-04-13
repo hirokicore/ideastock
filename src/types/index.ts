@@ -27,7 +27,20 @@ export type IdeaStock = {
   recommend_reason?: string | null;
   spread_score?: number | null;
   cost_score?: number | null;
+  related_ids?: string[];
   created_at: string;
+};
+
+export type SimilarCandidate = {
+  id: string;
+  title: string;
+  summary: string | null;
+  similarity_type: 'duplicate' | 'related';
+  reason: string;
+};
+
+export type SimilarityResult = {
+  candidates: SimilarCandidate[];
 };
 
 export type AnalysisResult = {

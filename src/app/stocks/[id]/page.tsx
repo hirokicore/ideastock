@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Link2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import Header from '@/components/layout/Header';
 import StockMeta from './StockMeta';
@@ -39,6 +39,16 @@ export default async function StockDetailPage({
   if (error || !data) notFound();
 
   const stock = data as IdeaStock;
+
+  // Fetch related stocks if any
+  let relatedStocks: { id: string; title: string; summary: string | null; recommend_score: number | null }[] = [];
+  if (stock.related_ids && stock.related_ids.length > 0) {
+    const { data: related } = await supabase
+      .from('idea_stocks')
+      .select('id, title, summary, recommend_score')
+      .in('id', stock.related_ids);
+    relatedStocks = related ?? [];
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -187,6 +197,38 @@ export default async function StockDetailPage({
               }}
             />
           </div>
+
+          {/* Related ideas */}
+          {relatedStocks.length > 0 && (
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
+              <div className="flex items-center gap-2 text-brand-600 font-semibold text-sm">
+                <Link2 size={15} />
+                関連アイデア
+              </div>
+              <ul className="space-y-2">
+                {relatedStocks.map((r) => (
+                  <li key={r.id}>
+                    <Link
+                      href={`/stocks/${r.id}`}
+                      className="flex items-start justify-between gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors group"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-800 group-hover:text-brand-600 truncate">{r.title}</p>
+                        {r.summary && (
+                          <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">{r.summary}</p>
+                        )}
+                      </div>
+                      {r.recommend_score != null && (
+                        <span className={`inline-flex items-center justify-center flex-shrink-0 min-w-[3rem] tabular-nums text-xs font-bold px-2.5 py-1 rounded-full ${recommendBadgeStyle(r.recommend_score)}`}>
+                          {r.recommend_score}点
+                        </span>
+                      )}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Raw text (collapsible) */}
           <details className="bg-white border border-gray-200 rounded-2xl overflow-hidden group">

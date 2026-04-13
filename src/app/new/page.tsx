@@ -2,12 +2,13 @@
 
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, Save, RotateCcw, ChevronRight } from 'lucide-react';
+import { Sparkles, Save, RotateCcw, ChevronRight, GitMerge, Link2, PlusCircle, Loader2 } from 'lucide-react';
 import Header from '@/components/layout/Header';
-import type { StockFormData, AnalysisResult, Intent, RelatedProject } from '@/types';
+import type { StockFormData, AnalysisResult, Intent, RelatedProject, SimilarCandidate } from '@/types';
 import { recommendBadgeStyle } from '@/lib/utils';
 
-type PageState = 'form' | 'analyzing' | 'review' | 'saving';
+type PageState = 'form' | 'analyzing' | 'review' | 'checking' | 'saving';
+type MergeChoice = 'merge' | 'link' | 'new';
 
 const SOURCE_PLATFORMS = ['Claude', 'ChatGPT', 'Perplexity', 'Gemini', 'Memo'] as const;
 const INTENTS: Intent[]          = ['商品化', '検討中', 'メモ'];
@@ -66,11 +67,42 @@ function ToggleGroup<T extends string>({
   );
 }
 
+function ChoiceButton({ value, current, onChange, icon, label, desc, color }: {
+  value: MergeChoice;
+  current: MergeChoice;
+  onChange: (v: MergeChoice) => void;
+  icon: React.ReactNode;
+  label: string;
+  desc: string;
+  color: string;
+}) {
+  const active = value === current;
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(value)}
+      className={`flex-1 flex flex-col items-center gap-1 px-3 py-2.5 rounded-xl border text-xs transition-all ${
+        active ? `${color} ring-2 ring-offset-1 ring-brand-400` : 'border-gray-200 text-gray-500 hover:border-gray-300'
+      }`}
+    >
+      {icon}
+      <span className="font-semibold">{label}</span>
+      <span className="text-center leading-snug opacity-70">{desc}</span>
+    </button>
+  );
+}
+
 export default function NewPage() {
   const router = useRouter();
   const [state, setState] = useState<PageState>('form');
   const [error, setError] = useState('');
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+
+  // Similarity state
+  const [similarCandidates, setSimilarCandidates] = useState<SimilarCandidate[]>([]);
+  const [mergeChoices, setMergeChoices] = useState<Record<string, MergeChoice>>({});
+  const [similarChecked, setSimilarChecked] = useState(false);
+  const [similarError, setSimilarError] = useState('');
 
   const [form, setForm] = useState<StockFormData>({
     title: '',
@@ -100,8 +132,42 @@ export default function NewPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'AI分析に失敗しました');
-      setAnalysis(data as AnalysisResult);
-      setState('review');
+      const result = data as AnalysisResult;
+      setAnalysis(result);
+      setSimilarChecked(false);
+      setSimilarCandidates([]);
+      setMergeChoices({});
+      setSimilarError('');
+      setState('checking');
+
+      // Auto-check similarity
+      try {
+        const simRes = await fetch('/api/stocks/similar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: form.title,
+            summary: result.summary,
+            tags: result.tags,
+          }),
+        });
+        const simData = await simRes.json();
+        if (!simRes.ok) {
+          setSimilarError(simData.error ?? '類似チェックに失敗しました');
+        } else {
+          const candidates: SimilarCandidate[] = simData.candidates ?? [];
+          setSimilarCandidates(candidates);
+          // Default: all candidates → 'new'
+          const defaults: Record<string, MergeChoice> = {};
+          candidates.forEach((c) => { defaults[c.id] = 'new'; });
+          setMergeChoices(defaults);
+        }
+      } catch (err) {
+        setSimilarError(err instanceof Error ? err.message : '類似チェックでエラーが発生しました');
+      } finally {
+        setSimilarChecked(true);
+        setState('review');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : '分析中にエラーが発生しました');
       setState('form');
@@ -114,6 +180,14 @@ export default function NewPage() {
     setError('');
 
     try {
+      // If any candidate is 'merge', skip saving and redirect to that stock
+      const mergeTarget = similarCandidates.find((c) => mergeChoices[c.id] === 'merge');
+      if (mergeTarget) {
+        router.push(`/stocks/${mergeTarget.id}`);
+        return;
+      }
+
+      // Save new stock
       const res = await fetch('/api/stocks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -121,6 +195,21 @@ export default function NewPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? '保存に失敗しました');
+
+      const newId: string = data.id;
+
+      // Link candidates marked as 'link'
+      const linkTargets = similarCandidates.filter((c) => mergeChoices[c.id] === 'link');
+      await Promise.all(
+        linkTargets.map((c) =>
+          fetch(`/api/stocks/${newId}/link`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ link_id: c.id }),
+          })
+        )
+      );
+
       router.push('/stocks');
     } catch (err) {
       setError(err instanceof Error ? err.message : '保存中にエラーが発生しました');
@@ -138,7 +227,7 @@ export default function NewPage() {
           <div className="flex items-center gap-1.5 text-sm text-gray-400 mb-6">
             <span className={state === 'form' || state === 'analyzing' ? 'text-brand-600 font-medium' : ''}>入力</span>
             <ChevronRight size={14} />
-            <span className={state === 'review' || state === 'saving' ? 'text-brand-600 font-medium' : ''}>AI分析結果を確認</span>
+            <span className={state === 'review' || state === 'saving' || state === 'checking' ? 'text-brand-600 font-medium' : ''}>AI分析結果を確認</span>
             <ChevronRight size={14} />
             <span className={state === 'saving' ? 'text-brand-600 font-medium' : ''}>保存</span>
           </div>
@@ -214,6 +303,14 @@ export default function NewPage() {
             </form>
           )}
 
+          {/* ── CHECKING (similarity in progress) ── */}
+          {state === 'checking' && (
+            <div className="flex flex-col items-center gap-4 py-16 text-gray-500">
+              <Loader2 size={32} className="animate-spin text-brand-400" />
+              <p className="text-sm">類似アイデアを確認中...</p>
+            </div>
+          )}
+
           {/* ── REVIEW ── */}
           {(state === 'review' || state === 'saving') && analysis && (
             <div className="space-y-6">
@@ -225,6 +322,83 @@ export default function NewPage() {
                   <p className="text-sm text-gray-500 italic">「{form.human_note}」</p>
                 )}
               </div>
+
+              {/* Similar check error */}
+              {similarChecked && similarError && (
+                <div className="bg-white rounded-2xl border border-red-200 p-4">
+                  <p className="text-xs text-red-500">類似チェックエラー: {similarError}</p>
+                </div>
+              )}
+
+              {/* Similar candidates */}
+              {similarChecked && !similarError && similarCandidates.length > 0 && (
+                <div className="bg-white rounded-2xl border border-amber-200 shadow-sm p-6 space-y-4">
+                  <div className="flex items-center gap-2 text-amber-600 font-semibold text-sm">
+                    <GitMerge size={16} />
+                    類似アイデア候補
+                  </div>
+                  <p className="text-xs text-gray-500">既存ストックと類似している可能性があります。各候補への対応を選んでください。</p>
+
+                  <div className="space-y-4">
+                    {similarCandidates.map((candidate) => (
+                      <div key={candidate.id} className="rounded-xl border border-gray-100 p-4 space-y-3">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`badge text-xs ${candidate.similarity_type === 'duplicate' ? 'bg-red-100 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
+                              {candidate.similarity_type === 'duplicate' ? '統合候補' : '関連候補'}
+                            </span>
+                            <a
+                              href={`/stocks/${candidate.id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm font-medium text-gray-800 hover:text-brand-600 transition-colors"
+                            >
+                              {candidate.title}
+                            </a>
+                          </div>
+                          <p className="text-xs text-gray-500 leading-relaxed">{candidate.reason}</p>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <ChoiceButton
+                            value="merge"
+                            current={mergeChoices[candidate.id] ?? 'new'}
+                            onChange={(v) => setMergeChoices((prev) => ({ ...prev, [candidate.id]: v }))}
+                            icon={<GitMerge size={14} />}
+                            label="A: 統合"
+                            desc="新規は保存せず既存へ"
+                            color="bg-red-50 text-red-600 border-red-200"
+                          />
+                          <ChoiceButton
+                            value="link"
+                            current={mergeChoices[candidate.id] ?? 'new'}
+                            onChange={(v) => setMergeChoices((prev) => ({ ...prev, [candidate.id]: v }))}
+                            icon={<Link2 size={14} />}
+                            label="B: 関連付け"
+                            desc="両方保存して紐付け"
+                            color="bg-blue-50 text-blue-600 border-blue-200"
+                          />
+                          <ChoiceButton
+                            value="new"
+                            current={mergeChoices[candidate.id] ?? 'new'}
+                            onChange={(v) => setMergeChoices((prev) => ({ ...prev, [candidate.id]: v }))}
+                            icon={<PlusCircle size={14} />}
+                            label="C: 新規"
+                            desc="別々に登録"
+                            color="bg-gray-100 text-gray-600 border-gray-200"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {similarCandidates.some((c) => mergeChoices[c.id] === 'merge') && (
+                    <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
+                      「統合」を選択すると、新規ストックは保存されず既存ストックのページに移動します。
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* AI analysis */}
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
@@ -318,7 +492,7 @@ export default function NewPage() {
 
               <div className="flex gap-3">
                 <button
-                  onClick={() => { setState('form'); setAnalysis(null); }}
+                  onClick={() => { setState('form'); setAnalysis(null); setSimilarCandidates([]); setSimilarError(''); }}
                   disabled={state === 'saving'}
                   className="btn-secondary flex-1"
                 >
@@ -327,6 +501,8 @@ export default function NewPage() {
                 <button onClick={handleSave} disabled={state === 'saving'} className="btn-primary flex-1">
                   {state === 'saving' ? (
                     <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />保存中...</>
+                  ) : similarCandidates.some((c) => mergeChoices[c.id] === 'merge') ? (
+                    <><GitMerge size={16} />既存ストックへ移動</>
                   ) : (
                     <><Save size={16} />保存する</>
                   )}
