@@ -33,6 +33,19 @@ export default async function TasksPage() {
 
   const all = (tasks ?? []) as ExecutionTask[];
 
+  // Fetch plan_type for tasks that have source_plan_id
+  const planIds = [...new Set(all.map((t) => t.source_plan_id).filter(Boolean))] as string[];
+  const mvpPlanIds = new Set<string>();
+  if (planIds.length > 0) {
+    const { data: plans } = await supabase
+      .from('business_plans')
+      .select('id, plan_type')
+      .in('id', planIds);
+    (plans ?? []).forEach((p: { id: string; plan_type: string }) => {
+      if (p.plan_type === 'mvp') mvpPlanIds.add(p.id);
+    });
+  }
+
   const grouped = TIME_SLOTS.reduce<Record<TimeSlot, ExecutionTask[]>>((acc, slot) => {
     acc[slot] = all.filter((t) => t.time_slot === slot);
     return acc;
@@ -73,29 +86,37 @@ export default async function TasksPage() {
                       <span className="text-xs text-gray-400">{doneCnt}/{slotTasks.length}</span>
                     </div>
                     <div className="space-y-2">
-                      {slotTasks.map((task) => (
-                        <Link
-                          key={task.id}
-                          href={`/tasks/${task.id}`}
-                          className={`bg-white rounded-2xl border p-4 flex items-center gap-3 hover:shadow-sm transition-all group ${
-                            task.status === 'done'
-                              ? 'border-gray-100 opacity-60'
-                              : 'border-gray-200 hover:border-brand-300'
-                          }`}
-                        >
-                          <StatusIcon status={task.status} />
-                          <div className="flex-1 min-w-0">
-                            <p className={`text-sm font-medium truncate ${task.status === 'done' ? 'line-through text-gray-400' : 'text-gray-900 group-hover:text-brand-700'}`}>
-                              {task.title}
-                            </p>
-                            <p className="text-xs text-gray-400 mt-0.5 truncate">{task.description}</p>
-                          </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <span className="text-xs text-gray-300">{formatDate(task.created_at)}</span>
-                            <ChevronRight size={15} className="text-gray-300 group-hover:text-brand-400 transition-colors" />
-                          </div>
-                        </Link>
-                      ))}
+                      {slotTasks.map((task) => {
+                        const isMvp = task.source_plan_id ? mvpPlanIds.has(task.source_plan_id) : false;
+                        return (
+                          <Link
+                            key={task.id}
+                            href={`/tasks/${task.id}`}
+                            className={`bg-white rounded-2xl border p-4 flex items-center gap-3 hover:shadow-sm transition-all group ${
+                              task.status === 'done'
+                                ? 'border-gray-100 opacity-60'
+                                : 'border-gray-200 hover:border-brand-300'
+                            }`}
+                          >
+                            <StatusIcon status={task.status} />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 mb-0.5">
+                                {isMvp && (
+                                  <span className="badge bg-brand-100 text-brand-700 text-[10px] px-1.5 py-0 leading-4">MVP</span>
+                                )}
+                                <p className={`text-sm font-medium truncate ${task.status === 'done' ? 'line-through text-gray-400' : 'text-gray-900 group-hover:text-brand-700'}`}>
+                                  {task.title}
+                                </p>
+                              </div>
+                              <p className="text-xs text-gray-400 truncate">{task.description}</p>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <span className="text-xs text-gray-300">{formatDate(task.created_at)}</span>
+                              <ChevronRight size={15} className="text-gray-300 group-hover:text-brand-400 transition-colors" />
+                            </div>
+                          </Link>
+                        );
+                      })}
                     </div>
                   </section>
                 );

@@ -89,6 +89,7 @@ export default async function PlanDetailPage({
               <div className="space-y-1 flex-1">
                 <span className="badge bg-brand-100 text-brand-700 mb-1">MVP</span>
                 <h1 className="text-xl font-bold text-gray-900">{plan.title}</h1>
+                <p className="text-xs text-brand-500 font-medium">MVP事業計画</p>
                 <p className="text-xs text-gray-400">{formatDate(plan.created_at)}</p>
               </div>
               <StatusSelect planId={plan.id} initialStatus={plan.status} />
