@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Link2 } from 'lucide-react';
+import { ArrowLeft, Link2, GitMerge } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import Header from '@/components/layout/Header';
 import StockMeta from './StockMeta';
@@ -198,6 +198,42 @@ export default async function StockDetailPage({
               }}
             />
           </div>
+
+          {/* Variations */}
+          {stock.variations && stock.variations.length > 0 && (
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
+              <div className="flex items-center gap-2 text-brand-600 font-semibold text-sm">
+                <GitMerge size={15} />
+                バリエーション
+                <span className="text-xs font-normal text-gray-400">（統合済みのサブ案）</span>
+              </div>
+              <ul className="space-y-3">
+                {stock.variations.map((v, i) => (
+                  <li key={i} className="rounded-xl border border-gray-100 p-4 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-sm font-medium text-gray-800">{v.title}</p>
+                      <span className="text-xs text-gray-400 flex-shrink-0">
+                        {new Date(v.merged_at).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                      <span className="font-medium text-gray-600">共通: </span>{v.shared_core}
+                    </p>
+                    {v.diff_points.length > 0 && (
+                      <ul className="space-y-1">
+                        {v.diff_points.map((pt, j) => (
+                          <li key={j} className="flex items-start gap-1.5 text-xs text-gray-500">
+                            <span className="text-brand-400 font-bold mt-0.5 flex-shrink-0">·</span>
+                            {pt}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Similar search */}
           <div className="bg-white border border-gray-200 rounded-2xl p-6">

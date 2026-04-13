@@ -182,9 +182,22 @@ export default function NewPage() {
     setError('');
 
     try {
-      // If any candidate is 'merge', skip saving and redirect to that stock
       const mergeTarget = similarCandidates.find((c) => mergeChoices[c.id] === 'merge');
+      const linkTargets = similarCandidates.filter((c) => mergeChoices[c.id] === 'link');
+
       if (mergeTarget) {
+        // Merge: send new idea as variation to existing stock
+        const mergeRes = await fetch(`/api/stocks/${mergeTarget.id}/merge`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: form.title,
+            summary: analysis.summary,
+            idea_list: analysis.idea_list,
+          }),
+        });
+        const mergeData = await mergeRes.json();
+        if (!mergeRes.ok) throw new Error(mergeData.error ?? '統合に失敗しました');
         router.push(`/stocks/${mergeTarget.id}`);
         return;
       }
@@ -201,7 +214,6 @@ export default function NewPage() {
       const newId: string = data.id;
 
       // Link candidates marked as 'link'
-      const linkTargets = similarCandidates.filter((c) => mergeChoices[c.id] === 'link');
       await Promise.all(
         linkTargets.map((c) =>
           fetch(`/api/stocks/${newId}/link`, {
@@ -504,7 +516,7 @@ export default function NewPage() {
                   {state === 'saving' ? (
                     <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />保存中...</>
                   ) : similarCandidates.some((c) => mergeChoices[c.id] === 'merge') ? (
-                    <><GitMerge size={16} />既存ストックへ移動</>
+                    <><GitMerge size={16} />バリエーションとして統合</>
                   ) : (
                     <><Save size={16} />保存する</>
                   )}

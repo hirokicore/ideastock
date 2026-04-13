@@ -28,7 +28,15 @@ export type IdeaStock = {
   spread_score?: number | null;
   cost_score?: number | null;
   related_ids?: string[];
+  variations?: Variation[];
   created_at: string;
+};
+
+export type Variation = {
+  title: string;
+  diff_points: string[];
+  shared_core: string;
+  merged_at: string;
 };
 
 export type SimilarCandidate = {

@@ -29,6 +29,7 @@ create table if not exists public.idea_stocks (
   spread_score      integer  check (spread_score between 1 and 3),
   cost_score        integer  check (cost_score between 1 and 3),
   related_ids       uuid[]   not null default '{}',
+  variations        jsonb    not null default '[]',
 
   created_at       timestamptz not null default now()
 );
@@ -46,6 +47,10 @@ create table if not exists public.idea_stocks (
 -- 類似アイデア機能のカラム追加（Supabase Dashboard > SQL Editor で実行）:
 -- alter table public.idea_stocks
 --   add column if not exists related_ids uuid[] not null default '{}';
+
+-- バリエーション機能のカラム追加（Supabase Dashboard > SQL Editor で実行）:
+-- alter table public.idea_stocks
+--   add column if not exists variations jsonb not null default '[]';
 
 -- RLS
 alter table public.idea_stocks enable row level security;
