@@ -14,6 +14,12 @@ function StatusBadge({ status }: { status: BusinessPlan['status'] }) {
   return <span className={`badge ${styles[status]}`}>{labels[status]}</span>;
 }
 
+function PlanTypeBadge({ planType }: { planType: BusinessPlan['plan_type'] }) {
+  return planType === 'full'
+    ? <span className="badge bg-purple-100 text-purple-700">フル版</span>
+    : <span className="badge bg-brand-100 text-brand-700">MVP</span>;
+}
+
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric' });
 }
@@ -24,11 +30,11 @@ export default async function PlansPage() {
 
   const { data: plans } = await supabase
     .from('business_plans')
-    .select('id, title, target_customer, status, created_at')
+    .select('id, title, plan_type, mvp_pain_point, status, created_at')
     .eq('user_id', user!.id)
     .order('created_at', { ascending: false });
 
-  const list = (plans ?? []) as Pick<BusinessPlan, 'id' | 'title' | 'target_customer' | 'status' | 'created_at'>[];
+  const list = (plans ?? []) as Pick<BusinessPlan, 'id' | 'title' | 'plan_type' | 'mvp_pain_point' | 'status' | 'created_at'>[];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -38,7 +44,7 @@ export default async function PlansPage() {
 
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">事業計画一覧</h1>
-            <Link href="/new" className="btn-primary">
+            <Link href="/plans/new/mvp" className="btn-primary">
               <PlusCircle size={15} />
               新規作成
             </Link>
@@ -47,7 +53,7 @@ export default async function PlansPage() {
           {list.length === 0 ? (
             <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center space-y-3">
               <p className="text-gray-400">まだ事業計画がありません</p>
-              <Link href="/new" className="btn-primary inline-flex">
+              <Link href="/plans/new/mvp" className="btn-primary inline-flex">
                 <PlusCircle size={15} />
                 最初の事業計画を作成
               </Link>
@@ -62,12 +68,13 @@ export default async function PlansPage() {
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
+                      <PlanTypeBadge planType={plan.plan_type} />
                       <StatusBadge status={plan.status} />
                       <span className="text-xs text-gray-400">{formatDate(plan.created_at)}</span>
                     </div>
                     <p className="font-semibold text-gray-900 group-hover:text-brand-700 truncate">{plan.title}</p>
-                    {plan.target_customer && (
-                      <p className="text-xs text-gray-500 mt-0.5 truncate">対象: {plan.target_customer}</p>
+                    {plan.mvp_pain_point && (
+                      <p className="text-xs text-gray-500 mt-0.5 truncate">{plan.mvp_pain_point}</p>
                     )}
                   </div>
                   <ChevronRight size={18} className="text-gray-300 flex-shrink-0 group-hover:text-brand-400 transition-colors" />

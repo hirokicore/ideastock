@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 const NAV = [
   { href: '/dashboard', label: 'ダッシュボード', icon: LayoutDashboard },
   { href: '/plans',     label: '事業計画一覧',   icon: FileText },
-  { href: '/new',       label: '新規作成',       icon: PlusCircle },
+  { href: '/plans/new/mvp', label: '新規作成', icon: PlusCircle },
 ];
 
 export default function Header() {

@@ -83,17 +83,9 @@ export default async function StockDetailPage({
           {/* Send to business-plan */}
           {(() => {
             const bp = process.env.NEXT_PUBLIC_BUSINESS_PLAN_URL ?? 'http://localhost:3001';
-            const qs = new URLSearchParams({
-              source_idea_id: stock.id,
-              title: stock.title,
-              summary: stock.summary ?? '',
-              tags: JSON.stringify(stock.tags ?? []),
-              idea_list: JSON.stringify(stock.idea_list ?? []),
-              recommend_score: String(stock.recommend_score ?? ''),
-            });
             return (
               <a
-                href={`${bp}/new?${qs.toString()}`}
+                href={`${bp}/plans/new/mvp?source_idea_id=${stock.id}`}
                 className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-2xl border border-brand-300 text-brand-600 font-semibold text-sm hover:bg-brand-50 transition-colors"
               >
                 <Briefcase size={16} />

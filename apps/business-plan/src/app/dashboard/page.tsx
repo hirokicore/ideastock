@@ -64,7 +64,7 @@ export default async function DashboardPage() {
             {recent.length === 0 ? (
               <div className="py-8 text-center space-y-3">
                 <p className="text-gray-400 text-sm">まだ事業計画がありません</p>
-                <Link href="/new" className="btn-primary inline-flex">
+                <Link href="/plans/new/mvp" className="btn-primary inline-flex">
                   <PlusCircle size={15} />
                   最初の事業計画を作成
                 </Link>
@@ -87,7 +87,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* CTA */}
-          <Link href="/new" className="btn-primary w-full text-base py-4 justify-center">
+          <Link href="/plans/new/mvp" className="btn-primary w-full text-base py-4 justify-center">
             <PlusCircle size={18} />
             新しい事業計画を作成
           </Link>
