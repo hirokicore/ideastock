@@ -6,20 +6,22 @@ import type { ExecutionTask, TimeSlot, TaskStatus } from '@/types';
 
 const TIME_SLOTS: TimeSlot[] = ['今日', '今週', '今月', 'いつか'];
 
-const STATUS_META: Record<TaskStatus, { label: string; icon: React.ReactNode; style: string }> = {
-  todo:  { label: 'todo',  icon: <Circle size={14} />,       style: 'text-gray-400' },
-  doing: { label: 'doing', icon: <Loader size={14} />,       style: 'text-blue-500' },
-  done:  { label: 'done',  icon: <CheckCircle2 size={14} />, style: 'text-brand-500' },
+const STATUS_META: Record<TaskStatus, { icon: React.ReactNode; style: string }> = {
+  todo:  { icon: <Circle size={14} />,       style: 'text-gray-400' },
+  doing: { icon: <Loader size={14} />,       style: 'text-blue-500' },
+  done:  { icon: <CheckCircle2 size={14} />, style: 'text-brand-500' },
 };
 
 function StatusIcon({ status }: { status: TaskStatus }) {
-  const meta = STATUS_META[status];
-  return <span className={meta.style}>{meta.icon}</span>;
+  const { icon, style } = STATUS_META[status];
+  return <span className={style}>{icon}</span>;
 }
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' });
 }
+
+type PlanInfo = { id: string; title: string; plan_type: string };
 
 export default async function TasksPage() {
   const supabase = await createClient();
@@ -33,23 +35,30 @@ export default async function TasksPage() {
 
   const all = (tasks ?? []) as ExecutionTask[];
 
-  // Fetch plan_type for tasks that have source_plan_id
+  // Fetch plan info for all source_plan_ids
   const planIds = [...new Set(all.map((t) => t.source_plan_id).filter(Boolean))] as string[];
-  const mvpPlanIds = new Set<string>();
+  const planMap = new Map<string, PlanInfo>();
   if (planIds.length > 0) {
     const { data: plans } = await supabase
       .from('business_plans')
-      .select('id, plan_type')
+      .select('id, title, plan_type')
       .in('id', planIds);
-    (plans ?? []).forEach((p: { id: string; plan_type: string }) => {
-      if (p.plan_type === 'mvp') mvpPlanIds.add(p.id);
-    });
+    (plans ?? []).forEach((p: PlanInfo) => planMap.set(p.id, p));
   }
 
-  const grouped = TIME_SLOTS.reduce<Record<TimeSlot, ExecutionTask[]>>((acc, slot) => {
-    acc[slot] = all.filter((t) => t.time_slot === slot);
-    return acc;
-  }, { '今日': [], '今週': [], '今月': [], 'いつか': [] });
+  // Group tasks by source_plan_id (null → 'none')
+  type GroupKey = string; // plan_id or 'none'
+  const groupOrder: GroupKey[] = [];
+  const groupedTasks = new Map<GroupKey, ExecutionTask[]>();
+
+  for (const task of all) {
+    const key: GroupKey = task.source_plan_id ?? 'none';
+    if (!groupedTasks.has(key)) {
+      groupOrder.push(key);
+      groupedTasks.set(key, []);
+    }
+    groupedTasks.get(key)!.push(task);
+  }
 
   const totalDone = all.filter((t) => t.status === 'done').length;
 
@@ -59,13 +68,11 @@ export default async function TasksPage() {
       <main className="flex-1 py-10 px-4">
         <div className="max-w-2xl mx-auto space-y-8">
 
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">タスク一覧</h1>
-              {all.length > 0 && (
-                <p className="text-sm text-gray-400 mt-0.5">{totalDone} / {all.length} 完了</p>
-              )}
-            </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">タスク一覧</h1>
+            {all.length > 0 && (
+              <p className="text-sm text-gray-400 mt-0.5">{totalDone} / {all.length} 完了</p>
+            )}
           </div>
 
           {all.length === 0 ? (
@@ -74,47 +81,70 @@ export default async function TasksPage() {
               <p className="text-gray-300 text-xs">事業計画サイトの詳細画面から「実行タスクを生成」してください</p>
             </div>
           ) : (
-            <div className="space-y-8">
-              {TIME_SLOTS.map((slot) => {
-                const slotTasks = grouped[slot];
-                if (slotTasks.length === 0) return null;
-                const doneCnt = slotTasks.filter((t) => t.status === 'done').length;
+            <div className="space-y-10">
+              {groupOrder.map((planId) => {
+                const planTasks = groupedTasks.get(planId)!;
+                const plan = planId !== 'none' ? planMap.get(planId) : null;
+                const isMvp = plan?.plan_type === 'mvp';
+                const doneCnt = planTasks.filter((t) => t.status === 'done').length;
+
                 return (
-                  <section key={slot}>
-                    <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{slot}</h2>
-                      <span className="text-xs text-gray-400">{doneCnt}/{slotTasks.length}</span>
+                  <section key={planId}>
+                    {/* Group header */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {isMvp && (
+                          <span className="badge bg-brand-100 text-brand-700 flex-shrink-0">MVP</span>
+                        )}
+                        {plan ? (
+                          <h2 className="text-base font-semibold text-gray-800 truncate">{plan.title}</h2>
+                        ) : (
+                          <h2 className="text-base font-semibold text-gray-400">未分類</h2>
+                        )}
+                      </div>
+                      <span className="text-xs text-gray-400 flex-shrink-0 ml-2">{doneCnt}/{planTasks.length} 完了</span>
                     </div>
-                    <div className="space-y-2">
-                      {slotTasks.map((task) => {
-                        const isMvp = task.source_plan_id ? mvpPlanIds.has(task.source_plan_id) : false;
+
+                    {/* Tasks grouped by time_slot within this plan */}
+                    <div className="space-y-5">
+                      {TIME_SLOTS.map((slot) => {
+                        const slotTasks = planTasks.filter((t) => t.time_slot === slot);
+                        if (slotTasks.length === 0) return null;
                         return (
-                          <Link
-                            key={task.id}
-                            href={`/tasks/${task.id}`}
-                            className={`bg-white rounded-2xl border p-4 flex items-center gap-3 hover:shadow-sm transition-all group ${
-                              task.status === 'done'
-                                ? 'border-gray-100 opacity-60'
-                                : 'border-gray-200 hover:border-brand-300'
-                            }`}
-                          >
-                            <StatusIcon status={task.status} />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5 mb-0.5">
-                                {isMvp && (
-                                  <span className="badge bg-brand-100 text-brand-700 text-[10px] px-1.5 py-0 leading-4">MVP</span>
-                                )}
-                                <p className={`text-sm font-medium truncate ${task.status === 'done' ? 'line-through text-gray-400' : 'text-gray-900 group-hover:text-brand-700'}`}>
-                                  {task.title}
-                                </p>
-                              </div>
-                              <p className="text-xs text-gray-400 truncate">{task.description}</p>
+                          <div key={slot}>
+                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 ml-1">{slot}</p>
+                            <div className="space-y-2">
+                              {slotTasks.map((task) => (
+                                <Link
+                                  key={task.id}
+                                  href={`/tasks/${task.id}`}
+                                  className={`bg-white rounded-2xl border p-4 flex items-center gap-3 hover:shadow-sm transition-all group ${
+                                    task.status === 'done'
+                                      ? 'border-gray-100 opacity-60'
+                                      : 'border-gray-200 hover:border-brand-300'
+                                  }`}
+                                >
+                                  <StatusIcon status={task.status} />
+                                  <div className="flex-1 min-w-0">
+                                    <p className={`text-sm font-medium truncate ${
+                                      task.status === 'done'
+                                        ? 'line-through text-gray-400'
+                                        : 'text-gray-900 group-hover:text-brand-700'
+                                    }`}>
+                                      {task.title}
+                                    </p>
+                                    {task.description && (
+                                      <p className="text-xs text-gray-400 mt-0.5 truncate">{task.description}</p>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                    <span className="text-xs text-gray-300">{formatDate(task.created_at)}</span>
+                                    <ChevronRight size={15} className="text-gray-300 group-hover:text-brand-400 transition-colors" />
+                                  </div>
+                                </Link>
+                              ))}
                             </div>
-                            <div className="flex items-center gap-2 flex-shrink-0">
-                              <span className="text-xs text-gray-300">{formatDate(task.created_at)}</span>
-                              <ChevronRight size={15} className="text-gray-300 group-hover:text-brand-400 transition-colors" />
-                            </div>
-                          </Link>
+                          </div>
                         );
                       })}
                     </div>
