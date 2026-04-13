@@ -28,7 +28,7 @@ export async function PATCH(
   const allowed = {
     intent: ['商品化', '検討中', 'メモ'] as Intent[],
     related_project: ['TrainerDocs', 'IdeaStock', 'その他'] as RelatedProject[],
-    priority_category: ['A', 'B', 'C'] as PriorityCategory[],
+    priority_category: ['今すぐ', '仕込み', '挑戦'] as PriorityCategory[],
     time_slot: ['今月', '3ヶ月以内', '半年〜', 'いつか'] as TimeSlot[],
   };
 

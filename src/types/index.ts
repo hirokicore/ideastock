@@ -1,7 +1,7 @@
 export type SourcePlatform = 'Claude' | 'ChatGPT' | 'Perplexity' | 'Gemini' | 'Memo';
 export type Intent = '商品化' | '検討中' | 'メモ';
 export type RelatedProject = 'TrainerDocs' | 'IdeaStock' | 'その他';
-export type PriorityCategory = 'A' | 'B' | 'C';
+export type PriorityCategory = '今すぐ' | '仕込み' | '挑戦';
 export type TimeSlot = '今月' | '3ヶ月以内' | '半年〜' | 'いつか';
 
 export type IdeaStock = {

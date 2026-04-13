@@ -6,7 +6,7 @@ import type { Intent, RelatedProject, PriorityCategory, TimeSlot } from '@/types
 
 const INTENTS: Intent[] = ['商品化', '検討中', 'メモ'];
 const RELATED_PROJECTS: RelatedProject[] = ['TrainerDocs', 'IdeaStock', 'その他'];
-const PRIORITY_CATEGORIES: PriorityCategory[] = ['A', 'B', 'C'];
+const PRIORITY_CATEGORIES: PriorityCategory[] = ['今すぐ', '仕込み', '挑戦'];
 const TIME_SLOTS: TimeSlot[] = ['今月', '3ヶ月以内', '半年〜', 'いつか'];
 
 export function intentStyle(v: string) {
@@ -16,9 +16,9 @@ export function intentStyle(v: string) {
 }
 
 export function priorityStyle(v: string) {
-  if (v === 'A') return 'bg-red-100 text-red-700';
-  if (v === 'B') return 'bg-blue-100 text-blue-700';
-  if (v === 'C') return 'bg-purple-100 text-purple-700';
+  if (v === '今すぐ') return 'bg-red-100 text-red-700';
+  if (v === '仕込み') return 'bg-blue-100 text-blue-700';
+  if (v === '挑戦')   return 'bg-purple-100 text-purple-700';
   return 'bg-gray-100 text-gray-500';
 }
 

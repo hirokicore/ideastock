@@ -21,7 +21,7 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 
 const INTENT_OPTIONS: (Intent | 'すべて')[] = ['すべて', '商品化', '検討中', 'メモ'];
 const PROJECT_OPTIONS: (RelatedProject | 'すべて')[] = ['すべて', 'TrainerDocs', 'IdeaStock', 'その他'];
-const PRIORITY_OPTIONS: (PriorityCategory | 'すべて')[] = ['すべて', 'A', 'B', 'C'];
+const PRIORITY_OPTIONS: (PriorityCategory | 'すべて')[] = ['すべて', '今すぐ', '仕込み', '挑戦'];
 const TIME_SLOT_OPTIONS: (TimeSlot | 'すべて')[] = ['すべて', '今月', '3ヶ月以内', '半年〜', 'いつか'];
 
 function ScorePips({ score, max = 5 }: { score: number; max?: number }) {
@@ -41,9 +41,9 @@ function intentStyle(intent: string) {
 }
 
 function priorityStyle(v: string) {
-  if (v === 'A') return 'bg-red-100 text-red-700';
-  if (v === 'B') return 'bg-blue-100 text-blue-700';
-  if (v === 'C') return 'bg-purple-100 text-purple-700';
+  if (v === '今すぐ') return 'bg-red-100 text-red-700';
+  if (v === '仕込み') return 'bg-blue-100 text-blue-700';
+  if (v === '挑戦')   return 'bg-purple-100 text-purple-700';
   return 'bg-gray-100 text-gray-500';
 }
 

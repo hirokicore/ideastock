@@ -89,7 +89,7 @@ ${stock.raw_text}${stock.human_note ? `\n一言メモ: ${stock.human_note}` : ''
   "recommend_reason": "おすすめ理由（1〜2行）",
   "intent": "商品化" | "検討中" | "メモ",
   "related_project": "TrainerDocs" | "IdeaStock" | "その他",
-  "priority_category": "A" | "B" | "C",
+  "priority_category": "今すぐ" | "仕込み" | "挑戦",
   "time_slot": "今月" | "3ヶ月以内" | "半年〜" | "いつか",
   "spread_score": 1〜3の整数（1=個人・クローズド、2=SNS展開可、3=バイラル狙える）,
   "cost_score": 1〜3の整数（1=低コスト、2=中程度、3=高コスト）
