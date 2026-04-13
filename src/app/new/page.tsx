@@ -159,7 +159,9 @@ export default function NewPage() {
           setSimilarCandidates(candidates);
           // Default: all candidates → 'new'
           const defaults: Record<string, MergeChoice> = {};
-          candidates.forEach((c) => { defaults[c.id] = 'new'; });
+          candidates.forEach((c) => {
+            defaults[c.id] = c.similarity_type === 'duplicate' ? 'merge' : 'link';
+          });
           setMergeChoices(defaults);
         }
       } catch (err) {
