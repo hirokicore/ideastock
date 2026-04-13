@@ -159,7 +159,7 @@ export default async function StockDetailPage({
 
                 <div className="flex items-start gap-4 pt-2">
                   <span
-                    className={`text-3xl font-bold px-5 py-2 rounded-xl flex-shrink-0 ${recommendBadgeStyle(stock.recommend_score)}`}
+                    className={`inline-flex items-center justify-center min-w-[5rem] tabular-nums text-3xl font-bold px-5 py-2 rounded-xl flex-shrink-0 ${recommendBadgeStyle(stock.recommend_score)}`}
                   >
                     {stock.recommend_score}点
                   </span>

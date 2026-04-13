@@ -297,7 +297,7 @@ export default function StocksClient({ initialStocks }: { initialStocks: IdeaSto
                         </div>
                       )}
                     </div>
-                    <span className={`badge text-sm font-bold px-3 py-1 ${recommendBadgeStyle(stock.recommend_score)}`}>
+                    <span className={`inline-flex items-center justify-center min-w-[3.25rem] tabular-nums text-sm font-bold px-3 py-1 rounded-full ${recommendBadgeStyle(stock.recommend_score)}`}>
                       {stock.recommend_score}点
                     </span>
                   </div>
