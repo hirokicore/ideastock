@@ -23,7 +23,7 @@ export default async function ResultPage({
       <div className="max-w-lg mx-auto space-y-5">
 
         {/* 結果ヘッダーカード */}
-        <div className={`bg-gradient-to-br ${gradient} rounded-3xl p-8 text-white shadow-xl space-y-4`}>
+        <div className="rounded-3xl p-8 text-white shadow-xl space-y-4" style={{ background: gradient }}>
           <div className="flex items-center gap-3">
             <span className="text-4xl">{type.emoji}</span>
             <div>

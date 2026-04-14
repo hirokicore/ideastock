@@ -10,16 +10,17 @@ export type DiagnosisType = {
   shareable_text: string;
 };
 
-// タイプごとの背景グラデーション（Tailwindクラス）
+// タイプごとの背景グラデーション（インラインスタイル用CSS値）
+// ※ Tailwindクラスはlib/がスキャン対象外になる場合があるため inline style で指定
 export const TYPE_GRADIENTS: Record<number, string> = {
-  0: 'from-violet-700 to-purple-900',
-  1: 'from-pink-700 to-rose-800',
-  2: 'from-amber-600 to-orange-700',
-  3: 'from-red-700 to-rose-900',
-  4: 'from-teal-700 to-cyan-800',
-  5: 'from-blue-700 to-indigo-800',
-  6: 'from-emerald-700 to-green-800',
-  7: 'from-sky-700 to-blue-800',
+  0: 'linear-gradient(135deg, #4c1d95, #6d28d9)', // violet
+  1: 'linear-gradient(135deg, #9d174d, #be185d)', // rose
+  2: 'linear-gradient(135deg, #78350f, #b45309)', // amber
+  3: 'linear-gradient(135deg, #7f1d1d, #b91c1c)', // red
+  4: 'linear-gradient(135deg, #134e4a, #0f766e)', // teal
+  5: 'linear-gradient(135deg, #1e3a8a, #1d4ed8)', // blue
+  6: 'linear-gradient(135deg, #14532d, #15803d)', // emerald
+  7: 'linear-gradient(135deg, #0c4a6e, #0369a1)', // sky
 };
 
 // タイプごとのアクセントカラー（テキスト・ボーダー用）
