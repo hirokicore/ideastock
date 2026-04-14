@@ -208,16 +208,24 @@ export default function NewPage() {
   const [genLoading,    setGenLoading]    = useState(false);
   const [genError,      setGenError]      = useState('');
   const [genIdeas,      setGenIdeas]      = useState<GeneratedIdea[]>([]);
+  const [selectedIdeaIdx, setSelectedIdeaIdx] = useState<number | null>(null);
+  const [bulkSaving,    setBulkSaving]    = useState(false);
+  const [bulkSaved,     setBulkSaved]     = useState(false);
 
   // ── Mode switch ──
   const handleModeSwitch = (m: PageMode) => {
     setPageMode(m);
     setError('');
     setGenError('');
+    if (m === 'generate') {
+      setSelectedIdeaIdx(null);
+      setState('form');
+      setAnalysis(null);
+    }
   };
 
   // ── Evaluate: fill form from generated idea ──
-  const useGeneratedIdea = (idea: GeneratedIdea) => {
+  const useGeneratedIdea = (idea: GeneratedIdea, idx: number) => {
     setForm({
       title: idea.title,
       source_platform: 'Claude',
@@ -229,7 +237,28 @@ export default function NewPage() {
     setSimilarCandidates([]);
     setSimilarError('');
     setSimilarChecked(false);
+    setSelectedIdeaIdx(idx);
     setPageMode('evaluate');
+  };
+
+  // ── Generate: bulk save ──
+  const handleBulkSave = async () => {
+    setBulkSaving(true);
+    setBulkSaved(false);
+    try {
+      const res = await fetch('/api/ideas/save-bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ideas: genIdeas }),
+      });
+      const data = await res.json() as { count?: number; error?: string };
+      if (!res.ok || data.error) throw new Error(data.error ?? '保存に失敗しました');
+      setBulkSaved(true);
+    } catch (err) {
+      setGenError(err instanceof Error ? err.message : '保存に失敗しました');
+    } finally {
+      setBulkSaving(false);
+    }
   };
 
   // ── Evaluate: analyze ──
@@ -674,6 +703,40 @@ export default function NewPage() {
             </>
           )}
 
+          {/* ── Persistent ideas panel (evaluate mode) ── */}
+          {pageMode === 'evaluate' && genIdeas.length > 0 && (
+            <div className="mt-8 bg-gray-50 rounded-2xl border border-gray-200 p-4 space-y-3">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">生成されたアイデア</p>
+              {genIdeas.map((idea, i) => {
+                const isSelected = i === selectedIdeaIdx;
+                return (
+                  <div
+                    key={i}
+                    className={`flex items-center gap-3 bg-white rounded-xl border px-4 py-3 transition-all ${
+                      isSelected ? 'border-brand-300 bg-brand-50' : 'border-gray-100'
+                    }`}
+                  >
+                    <span className={`badge flex-shrink-0 ${
+                      isSelected ? 'bg-brand-100 text-brand-700' : recommendBadgeStyle(idea.recommend_score)
+                    }`}>
+                      {isSelected ? '評価中' : `${idea.recommend_score}点`}
+                    </span>
+                    <span className="flex-1 text-sm font-medium text-gray-800 truncate">{idea.title}</span>
+                    {!isSelected && (
+                      <button
+                        type="button"
+                        onClick={() => useGeneratedIdea(idea, i)}
+                        className="text-xs text-brand-600 hover:text-brand-700 font-medium flex-shrink-0 hover:underline"
+                      >
+                        評価する
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           {/* ══════════════ GENERATE MODE ══════════════ */}
           {pageMode === 'generate' && (
             <div className="space-y-6">
@@ -771,7 +834,7 @@ export default function NewPage() {
                       {/* CTA */}
                       <button
                         type="button"
-                        onClick={() => useGeneratedIdea(idea)}
+                        onClick={() => useGeneratedIdea(idea, i)}
                         className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-brand-300 text-brand-600 font-semibold text-sm hover:bg-brand-50 transition-colors"
                       >
                         このアイデアを評価する
@@ -779,6 +842,35 @@ export default function NewPage() {
                       </button>
                     </div>
                   ))}
+
+                  {/* Bulk save */}
+                  <div className="pt-2">
+                    {bulkSaved ? (
+                      <div className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium">
+                        <span>✓</span>{genIdeas.length}件のアイデアをストックに保存しました
+                        <button
+                          type="button"
+                          onClick={() => router.push('/stocks')}
+                          className="ml-auto text-emerald-600 hover:text-emerald-800 text-xs underline"
+                        >
+                          一覧へ
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleBulkSave}
+                        disabled={bulkSaving}
+                        className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gray-800 text-white font-semibold text-sm hover:bg-gray-900 transition-colors disabled:opacity-50"
+                      >
+                        {bulkSaving ? (
+                          <><Loader2 size={15} className="animate-spin" />保存中...</>
+                        ) : (
+                          <><Save size={15} />3案すべてをストックに保存</>
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
