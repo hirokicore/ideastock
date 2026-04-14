@@ -44,7 +44,7 @@ export default function HomePage() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="例：ひろき"
+              placeholder="例：たろう、はなこ"
               className="form-input"
               maxLength={20}
               required
