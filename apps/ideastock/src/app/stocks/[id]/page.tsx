@@ -203,6 +203,43 @@ export default async function StockDetailPage({
               </section>
             )}
 
+            {/* Hiroki priority scores */}
+            {(stock.placement_score != null || stock.mental_score != null || stock.revenue_score != null) && (
+              <section className="border-t border-gray-100 pt-6 space-y-4">
+                <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">ひろき版優先順位スコア</h2>
+                <div className="grid grid-cols-1 gap-3.5">
+                  {stock.placement_score != null && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600 w-28">放置度</span>
+                      <ScoreDots score={stock.placement_score} />
+                    </div>
+                  )}
+                  {stock.mental_score != null && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600 w-28">心理的な軽さ</span>
+                      <ScoreDots score={stock.mental_score} />
+                    </div>
+                  )}
+                  {stock.revenue_score != null && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600 w-28">収益ポテンシャル</span>
+                      <ScoreDots score={stock.revenue_score} />
+                    </div>
+                  )}
+                </div>
+                {stock.placement_score != null && stock.mental_score != null && stock.revenue_score != null && (
+                  <div className="flex items-center gap-3 pt-1">
+                    <span className="inline-flex items-center justify-center min-w-[5rem] tabular-nums text-3xl font-bold px-5 py-2 rounded-xl bg-indigo-50 text-indigo-700 flex-shrink-0">
+                      {((stock.placement_score * stock.mental_score * stock.revenue_score) / (stock.cost_score ?? 2)).toFixed(1)}
+                    </span>
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                      放置度×心理的軽さ×収益ポテ ÷ 実装コスト
+                    </p>
+                  </div>
+                )}
+              </section>
+            )}
+
             {/* Operation type */}
             {stock.operation_type && (
               <section className="border-t border-gray-100 pt-5">

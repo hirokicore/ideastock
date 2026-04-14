@@ -8,9 +8,10 @@ import RecommendPanel from './RecommendPanel';
 import type { IdeaStock, Intent, RelatedProject, PriorityCategory, TimeSlot } from '@/types';
 import { recommendBadgeStyle, formatDate } from '@/lib/utils';
 
-type SortKey = 'recommend_score' | 'impact_score' | 'difficulty_score' | 'spread_score' | 'cost_score' | 'created_at';
+type SortKey = 'recommend_score' | 'impact_score' | 'difficulty_score' | 'spread_score' | 'cost_score' | 'created_at' | 'hiroki_priority';
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: 'hiroki_priority', label: 'ひろき版優先度' },
   { key: 'recommend_score', label: 'おすすめ度' },
   { key: 'impact_score',    label: 'インパクト' },
   { key: 'difficulty_score', label: '難易度' },
@@ -18,6 +19,11 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: 'cost_score',      label: 'コスト' },
   { key: 'created_at',      label: '新着順' },
 ];
+
+function hirokiPriority(s: IdeaStock): number {
+  if (s.placement_score == null || s.mental_score == null || s.revenue_score == null) return -1;
+  return (s.placement_score * s.mental_score * s.revenue_score) / (s.cost_score ?? 2);
+}
 
 const INTENT_OPTIONS: (Intent | 'すべて')[] = ['すべて', '商品化', '検討中', 'メモ'];
 const PROJECT_OPTIONS: (RelatedProject | 'すべて')[] = ['すべて', 'TrainerDocs', 'IdeaStock', 'その他'];
@@ -188,6 +194,7 @@ export default function StocksClient({ initialStocks }: { initialStocks: IdeaSto
     if (filters.timeSlot !== 'すべて') list = list.filter((s) => s.time_slot === filters.timeSlot);
 
     list.sort((a, b) => {
+      if (sort === 'hiroki_priority') return hirokiPriority(b) - hirokiPriority(a);
       if (sort === 'created_at') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       if (sort === 'difficulty_score' || sort === 'cost_score') return (a[sort] ?? 0) - (b[sort] ?? 0);
       return (b[sort] ?? 0) - (a[sort] ?? 0);

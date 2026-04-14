@@ -29,6 +29,9 @@ export type IdeaStock = {
   spread_score?: number | null;
   cost_score?: number | null;
   operation_type?: OperationType | null;
+  placement_score?: number | null;
+  mental_score?: number | null;
+  revenue_score?: number | null;
   related_ids?: string[];
   variations?: Variation[];
   created_at: string;
@@ -70,6 +73,9 @@ export type AnalysisResult = {
   spread_score: number;
   cost_score: number;
   operation_type: OperationType;
+  placement_score: number;
+  mental_score: number;
+  revenue_score: number;
 };
 
 export type RefineResult = {
@@ -97,6 +103,9 @@ export type RefineResult = {
   spread_score: number;
   cost_score: number;
   operation_type: OperationType;
+  placement_score: number;
+  mental_score: number;
+  revenue_score: number;
 };
 
 export type StockFormData = {

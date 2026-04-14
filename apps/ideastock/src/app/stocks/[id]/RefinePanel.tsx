@@ -95,6 +95,9 @@ export default function RefinePanel({
           time_slot: result.time_slot,
           spread_score: result.spread_score,
           cost_score: result.cost_score,
+          placement_score: result.placement_score,
+          mental_score: result.mental_score,
+          revenue_score: result.revenue_score,
         }),
       });
       const data = await res.json();

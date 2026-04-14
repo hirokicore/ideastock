@@ -33,6 +33,9 @@ export async function POST(request: NextRequest) {
     spread_score:     2,
     cost_score:       1,
     operation_type:   '放置型',
+    placement_score:  idea.placement_score,
+    mental_score:     idea.mental_score,
+    revenue_score:    idea.revenue_score,
   }));
 
   const { error } = await supabase.from('idea_stocks').insert(rows);
