@@ -13,8 +13,11 @@
     "build:business-plan": "npm run build --workspace=apps/business-plan",
     "dev:execution": "npm run dev --workspace=apps/execution",
     "build:execution": "npm run build --workspace=apps/execution",
+    "dev:diagnosis": "npm run dev --workspace=apps/diagnosis",
+    "build:diagnosis": "npm run build --workspace=apps/diagnosis",
     "lint:ideastock": "npm run lint --workspace=apps/ideastock",
     "lint:business-plan": "npm run lint --workspace=apps/business-plan",
-    "lint:execution": "npm run lint --workspace=apps/execution"
+    "lint:execution": "npm run lint --workspace=apps/execution",
+    "lint:diagnosis": "npm run lint --workspace=apps/diagnosis"
   }
 }
