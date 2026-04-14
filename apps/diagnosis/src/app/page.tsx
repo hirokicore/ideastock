@@ -3,16 +3,23 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
+const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
+const DAYS   = Array.from({ length: 31 }, (_, i) => i + 1);
+
 export default function HomePage() {
   const router = useRouter();
-  const [name, setName] = useState('');
-  const [birthday, setBirthday] = useState('');
+  const [name,    setName]    = useState('');
+  const [month,   setMonth]   = useState('');
+  const [day,     setDay]     = useState('');
   const [loading, setLoading] = useState(false);
+
+  const isReady = name.trim() && month && day;
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !birthday) return;
+    if (!isReady) return;
     setLoading(true);
+    const birthday = `${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
     router.push(`/result?name=${encodeURIComponent(name.trim())}&birthday=${encodeURIComponent(birthday)}`);
   };
 
@@ -35,6 +42,7 @@ export default function HomePage() {
         {/* Form card */}
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-white/60 p-8 space-y-6">
 
+          {/* 名前 */}
           <div className="space-y-1">
             <label className="form-label" htmlFor="name">
               名前<span className="text-gray-400 font-normal">（ニックネームでOK）</span>
@@ -47,31 +55,49 @@ export default function HomePage() {
               placeholder="例：たろう、はなこ"
               className="form-input"
               maxLength={20}
-              required
             />
           </div>
 
+          {/* 誕生日（月・日） */}
           <div className="space-y-1">
-            <label className="form-label" htmlFor="birthday">
-              誕生日
-            </label>
-            <input
-              id="birthday"
-              type="date"
-              value={birthday}
-              onChange={(e) => setBirthday(e.target.value)}
-              className="form-input"
-              required
-            />
+            <p className="form-label">誕生日</p>
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <select
+                  value={month}
+                  onChange={(e) => setMonth(e.target.value)}
+                  className="form-input appearance-none pr-8 cursor-pointer"
+                >
+                  <option value="">月</option>
+                  {MONTHS.map((m) => (
+                    <option key={m} value={String(m)}>{m}月</option>
+                  ))}
+                </select>
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▼</span>
+              </div>
+              <div className="relative flex-1">
+                <select
+                  value={day}
+                  onChange={(e) => setDay(e.target.value)}
+                  className="form-input appearance-none pr-8 cursor-pointer"
+                >
+                  <option value="">日</option>
+                  {DAYS.map((d) => (
+                    <option key={d} value={String(d)}>{d}日</option>
+                  ))}
+                </select>
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▼</span>
+              </div>
+            </div>
           </div>
 
           <button
             onClick={handleSubmit}
-            disabled={!name.trim() || !birthday || loading}
+            disabled={!isReady || loading}
             className="btn-primary w-full text-white text-base"
             style={{
-              background: loading
-                ? '#a78bfa'
+              background: (!isReady || loading)
+                ? '#c4b5fd'
                 : 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
             }}
           >
