@@ -29,7 +29,7 @@ export default async function ResultPage({
           {/* 1. タイプ画像 */}
           <div className="relative w-full aspect-square">
             <Image
-              src={`/images/types/type-${type.id}.jpg`}
+              src={`/images/types/type-${type.id}.png`}
               alt={type.name}
               fill
               className="object-cover"
