@@ -40,13 +40,13 @@ export default async function ResultPage({
         </div>
 
         {/* タイプ説明 */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white/60 p-6 shadow-sm space-y-2">
+        <div className="bg-white rounded-3xl border border-purple-100 p-6 shadow-sm space-y-2">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider">タイプ解説</h2>
           <p className="text-sm text-gray-700 leading-relaxed">{type.description}</p>
         </div>
 
         {/* セルフケアTips */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white/60 p-6 shadow-sm space-y-4">
+        <div className="bg-white rounded-3xl border border-purple-100 p-6 shadow-sm space-y-4">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider">セルフケア Tips</h2>
           <ul className="space-y-3">
             {type.selfcare_tips.map((tip, i) => (
@@ -61,7 +61,7 @@ export default async function ResultPage({
         </div>
 
         {/* 周囲への説明文 */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white/60 p-6 shadow-sm space-y-4">
+        <div className="bg-white rounded-3xl border border-purple-100 p-6 shadow-sm space-y-4">
           <div>
             <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">周囲への説明文</h2>
             <p className="text-xs text-gray-400">信頼できる人に渡せる文章です</p>
@@ -73,7 +73,7 @@ export default async function ResultPage({
         </div>
 
         {/* シェア */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white/60 p-6 shadow-sm space-y-3">
+        <div className="bg-white rounded-3xl border border-purple-100 p-6 shadow-sm space-y-3">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">シェアする</h2>
           <XShareButton text={shareText} />
         </div>

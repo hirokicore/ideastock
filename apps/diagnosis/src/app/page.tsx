@@ -40,7 +40,7 @@ export default function HomePage() {
         </div>
 
         {/* Form card */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-white/60 p-8 space-y-6">
+        <div className="bg-white rounded-3xl shadow-xl border border-purple-100 p-8 space-y-6">
 
           {/* 名前 */}
           <div className="space-y-1">
@@ -124,7 +124,7 @@ export default function HomePage() {
           {['🏔️', '🌸', '⚖️', '⚡', '🌊', '🌀', '🔭', '🫧'].map((emoji, i) => (
             <div
               key={i}
-              className="bg-white/60 rounded-2xl p-3 text-center text-xl shadow-sm border border-white/50"
+              className="bg-white rounded-2xl p-3 text-center text-xl shadow-sm border border-purple-100"
             >
               {emoji}
             </div>
