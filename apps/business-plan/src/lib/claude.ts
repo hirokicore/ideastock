@@ -47,7 +47,9 @@ export async function generateMvpPlan(idea: IdeaSnapshot): Promise<Omit<MvpGener
   "mvp_pain_point": "誰のどんな不満か（ターゲット像と具体的な課題を2〜3文で）",
   "mvp_core_feature": "MVPで提供する1つのコア機能（最小限かつ最大価値。1〜2文で明確に）",
   "mvp_acquisition": "初回の集客導線（具体的なチャネル・方法・想定人数を2〜3文で）",
-  "mvp_monetization": "最初の収益化方法（価格帯・課金モデル・開始タイミングを2〜3文で）"
+  "mvp_monetization": "最初の収益化方法（価格帯・課金モデル・開始タイミングを2〜3文で）",
+  "placement_score": 1〜5の整数（放置度：営業なしでどれだけ自動で回るか。1=常時対応必須、5=完全放置可能）,
+  "mental_score": 1〜5の整数（心理的な軽さ：このMVPに着手しやすいか。1=ハードルが高い、5=すぐ始められる）
 }
 
 JSONのみ返してください。コードブロック不要。`;

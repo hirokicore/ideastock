@@ -38,6 +38,9 @@ export type BusinessPlan = {
   idea_snapshot: IdeaSnapshot | null;
   status:        PlanStatus;
   created_at:    string;
+  // Passive-first scores
+  placement_score?: number | null;
+  mental_score?: number | null;
 };
 
 export type MvpGenerateResult = {
@@ -47,6 +50,8 @@ export type MvpGenerateResult = {
   mvp_acquisition:  string;
   mvp_monetization: string;
   idea_snapshot:    IdeaSnapshot;
+  placement_score:  number;
+  mental_score:     number;
 };
 
 export type FullGenerateResult = {

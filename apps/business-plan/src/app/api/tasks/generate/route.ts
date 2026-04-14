@@ -4,7 +4,7 @@ import type { BusinessPlan } from '@/types';
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 
-type TaskItem = { title: string; description: string; time_slot: '今日' | '今週' };
+type TaskItem = { title: string; description: string; time_slot: '今日' | '今週'; mental_weight: 1 | 2 | 3 };
 
 async function generateTasks(plan: BusinessPlan): Promise<TaskItem[]> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -33,7 +33,8 @@ async function generateTasks(plan: BusinessPlan): Promise<TaskItem[]> {
   {
     "title": "タスク名（動詞で始まる簡潔な表現）",
     "description": "具体的に何をするか（ツール・方法・成果物まで明記。2〜3文）",
-    "time_slot": "今日|今週"
+    "time_slot": "今日|今週",
+    "mental_weight": 1〜3の整数（1=軽い・すぐ着手できる、2=中程度・少し準備が要る、3=重い・精神的にしんどい）
   }
 ]
 
@@ -96,6 +97,7 @@ export async function POST(request: NextRequest) {
       title:          t.title,
       description:    t.description,
       time_slot:      t.time_slot,
+      mental_weight:  t.mental_weight,
       status:         'todo',
       result:         '',
       learning:       '',

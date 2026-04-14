@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Users, Zap, Megaphone, DollarSign, ExternalLink, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Users, Zap, Megaphone, DollarSign, ExternalLink, ChevronRight, BedDouble, Smile } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import Header from '@/components/layout/Header';
 import StatusSelect from './StatusSelect';
@@ -23,6 +23,17 @@ function Section({ icon, label, children }: {
         {icon}{label}
       </div>
       {children}
+    </div>
+  );
+}
+
+function ScoreDots({ score, max = 5 }: { score: number; max?: number }) {
+  return (
+    <div className="flex gap-1.5 items-center">
+      {Array.from({ length: max }, (_, i) => (
+        <div key={i} className={`w-3 h-3 rounded-full ${i < score ? 'bg-brand-500' : 'bg-gray-200'}`} />
+      ))}
+      <span className="ml-1 text-sm font-semibold text-gray-700">{score} / {max}</span>
     </div>
   );
 }
@@ -122,6 +133,33 @@ export default async function PlanDetailPage({
           <Section icon={<DollarSign size={15} className="text-purple-500" />} label="最初の収益化方法">
             <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{plan.mvp_monetization || '—'}</p>
           </Section>
+
+          {/* Passive-first scores */}
+          {(plan.placement_score != null || plan.mental_score != null) && (
+            <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">放置型スコア</p>
+              <div className="grid grid-cols-1 gap-3">
+                {plan.placement_score != null && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <BedDouble size={15} className="text-emerald-500" />
+                      放置度
+                    </div>
+                    <ScoreDots score={plan.placement_score} />
+                  </div>
+                )}
+                {plan.mental_score != null && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Smile size={15} className="text-sky-500" />
+                      心理的な軽さ
+                    </div>
+                    <ScoreDots score={plan.mental_score} />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Idea snapshot panel */}
           {snap && snap.title && (

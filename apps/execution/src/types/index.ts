@@ -13,10 +13,12 @@ export type ExecutionTask = {
   result:         string;
   learning:       string;
   created_at:     string;
+  mental_weight?: number | null;
 };
 
 export type TaskGenerateItem = {
-  title:       string;
-  description: string;
-  time_slot:   TimeSlot;
+  title:         string;
+  description:   string;
+  time_slot:     TimeSlot;
+  mental_weight: number;
 };

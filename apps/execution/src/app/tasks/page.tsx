@@ -17,6 +17,13 @@ function StatusIcon({ status }: { status: TaskStatus }) {
   return <span className={style}>{icon}</span>;
 }
 
+function MentalWeightBadge({ weight }: { weight: number | null | undefined }) {
+  if (weight == null) return null;
+  if (weight === 1) return <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">軽</span>;
+  if (weight === 2) return <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-yellow-100 text-yellow-700">中</span>;
+  return <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700">重</span>;
+}
+
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' });
 }
@@ -31,12 +38,13 @@ export default async function TasksPage() {
     .from('execution_tasks')
     .select('*')
     .eq('user_id', user!.id)
-    .order('created_at', { ascending: false });
+    .order('mental_weight', { ascending: true, nullsFirst: false })
+    .order('created_at', { ascending: true });
 
   const all = (tasks ?? []) as ExecutionTask[];
 
   // Fetch plan info for all source_plan_ids
-  const planIds = [...new Set(all.map((t) => t.source_plan_id).filter(Boolean))] as string[];
+  const planIds = Array.from(new Set(all.map((t) => t.source_plan_id).filter(Boolean))) as string[];
   const planMap = new Map<string, PlanInfo>();
   if (planIds.length > 0) {
     const { data: plans } = await supabase
@@ -126,13 +134,16 @@ export default async function TasksPage() {
                                 >
                                   <StatusIcon status={task.status} />
                                   <div className="flex-1 min-w-0">
-                                    <p className={`text-sm font-medium truncate ${
-                                      task.status === 'done'
-                                        ? 'line-through text-gray-400'
-                                        : 'text-gray-900 group-hover:text-brand-700'
-                                    }`}>
-                                      {task.title}
-                                    </p>
+                                    <div className="flex items-center gap-1.5">
+                                      <p className={`text-sm font-medium truncate ${
+                                        task.status === 'done'
+                                          ? 'line-through text-gray-400'
+                                          : 'text-gray-900 group-hover:text-brand-700'
+                                      }`}>
+                                        {task.title}
+                                      </p>
+                                      <MentalWeightBadge weight={task.mental_weight} />
+                                    </div>
                                     {task.description && (
                                       <p className="text-xs text-gray-400 mt-0.5 truncate">{task.description}</p>
                                     )}

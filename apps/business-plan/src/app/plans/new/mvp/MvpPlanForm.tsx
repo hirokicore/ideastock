@@ -25,11 +25,13 @@ const FIELD_META: { key: keyof Fields; label: string; placeholder: string; rows:
 
 export default function MvpPlanForm({ sourceIdeaId }: { sourceIdeaId: string | null }) {
   const router = useRouter();
-  const [generating, setGenerating] = useState(false);
-  const [saving,     setSaving]     = useState(false);
-  const [genError,   setGenError]   = useState('');
-  const [saveError,  setSaveError]  = useState('');
-  const [snapshot,   setSnapshot]   = useState<MvpGenerateResult['idea_snapshot'] | null>(null);
+  const [generating,      setGenerating]      = useState(false);
+  const [saving,          setSaving]          = useState(false);
+  const [genError,        setGenError]        = useState('');
+  const [saveError,       setSaveError]       = useState('');
+  const [snapshot,        setSnapshot]        = useState<MvpGenerateResult['idea_snapshot'] | null>(null);
+  const [placementScore,  setPlacementScore]  = useState<number | null>(null);
+  const [mentalScore,     setMentalScore]     = useState<number | null>(null);
 
   const [fields, setFields] = useState<Fields>({
     title:            '',
@@ -60,6 +62,8 @@ export default function MvpPlanForm({ sourceIdeaId }: { sourceIdeaId: string | n
           mvp_monetization: data.mvp_monetization,
         });
         setSnapshot(data.idea_snapshot);
+        setPlacementScore(data.placement_score ?? null);
+        setMentalScore(data.mental_score ?? null);
       })
       .catch((e) => setGenError(e.message ?? '生成に失敗しました'))
       .finally(() => setGenerating(false));
@@ -92,6 +96,8 @@ export default function MvpPlanForm({ sourceIdeaId }: { sourceIdeaId: string | n
         mvp_monetization: fields.mvp_monetization,
         idea_snapshot:    snapshot ?? {},
         status:           'draft',
+        placement_score:  placementScore,
+        mental_score:     mentalScore,
         // Full fields (empty for now)
         target_customer:     '',
         value_proposition:   '',
