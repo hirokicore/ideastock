@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import Image from 'next/image';
 import Link from 'next/link';
 import { diagnose, TYPE_GRADIENTS, TYPE_ACCENTS } from '@/lib/diagnosis';
 import { CopyButton, XShareButton } from './ActionButtons';
@@ -23,23 +24,46 @@ export default async function ResultPage({
       <div className="max-w-lg mx-auto space-y-5">
 
         {/* 結果ヘッダーカード */}
-        <div className="rounded-3xl p-8 text-white shadow-xl space-y-4" style={{ background: gradient }}>
-          <div className="flex items-center gap-3">
-            <span className="text-4xl">{type.emoji}</span>
-            <div>
-              <p className="text-sm font-semibold opacity-80 uppercase tracking-wider">あなたのタイプ</p>
-              <h1 className="text-2xl font-black leading-tight">{type.name}</h1>
-            </div>
+        <div className="rounded-3xl overflow-hidden shadow-xl" style={{ background: gradient }}>
+
+          {/* 1. タイプ画像 */}
+          <div className="relative w-full aspect-square">
+            <Image
+              src={`/images/types/type-${type.id}.jpg`}
+              alt={type.name}
+              fill
+              className="object-cover"
+              priority
+            />
           </div>
-          <p className="text-base font-semibold leading-snug opacity-95 border-t border-white/20 pt-4">
-            {type.catchphrase}
-          </p>
-          <div className="bg-white/15 rounded-2xl px-4 py-2 inline-block">
-            <span className="text-sm font-bold">{name} さん</span>
+
+          <div className="p-7 text-white space-y-3">
+            {/* 2. タイプ名 */}
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">{type.emoji}</span>
+              <div>
+                <p className="text-xs font-semibold opacity-70 uppercase tracking-wider">あなたのタイプ</p>
+                <h1 className="text-2xl font-black leading-tight">{type.name}</h1>
+              </div>
+            </div>
+
+            {/* 3. キャッチコピー */}
+            <p className="text-base font-semibold leading-snug opacity-95 border-t border-white/20 pt-3">
+              {type.catchphrase}
+            </p>
+
+            {/* 4. 一言キャプション */}
+            <p className="text-sm opacity-75 leading-relaxed italic">
+              {type.caption}
+            </p>
+
+            <div className="bg-white/15 rounded-2xl px-4 py-2 inline-block">
+              <span className="text-sm font-bold">{name} さん</span>
+            </div>
           </div>
         </div>
 
-        {/* タイプ説明 */}
+        {/* 5. タイプ解説 */}
         <div className="bg-white rounded-3xl border border-purple-100 p-6 shadow-sm space-y-2">
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider">タイプ解説</h2>
           <p className="text-sm text-gray-700 leading-relaxed">{type.description}</p>

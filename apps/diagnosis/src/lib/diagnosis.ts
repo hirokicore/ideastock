@@ -5,6 +5,7 @@ export type DiagnosisType = {
   name: string;
   emoji: string;
   catchphrase: string;
+  caption: string;
   description: string;
   selfcare_tips: string[];
   shareable_text: string;
