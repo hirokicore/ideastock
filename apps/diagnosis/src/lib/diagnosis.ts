@@ -12,14 +12,14 @@ export type DiagnosisType = {
 
 // タイプごとの背景グラデーション（Tailwindクラス）
 export const TYPE_GRADIENTS: Record<number, string> = {
-  0: 'from-violet-500 to-purple-700',
-  1: 'from-pink-400 to-rose-500',
-  2: 'from-amber-400 to-orange-500',
-  3: 'from-red-500 to-rose-600',
-  4: 'from-teal-400 to-cyan-600',
-  5: 'from-blue-500 to-indigo-600',
-  6: 'from-emerald-500 to-green-600',
-  7: 'from-sky-400 to-blue-500',
+  0: 'from-violet-700 to-purple-900',
+  1: 'from-pink-700 to-rose-800',
+  2: 'from-amber-600 to-orange-700',
+  3: 'from-red-700 to-rose-900',
+  4: 'from-teal-700 to-cyan-800',
+  5: 'from-blue-700 to-indigo-800',
+  6: 'from-emerald-700 to-green-800',
+  7: 'from-sky-700 to-blue-800',
 };
 
 // タイプごとのアクセントカラー（テキスト・ボーダー用）
