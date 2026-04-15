@@ -6,7 +6,7 @@ import { Plus, SlidersHorizontal } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import RecommendPanel from './RecommendPanel';
 import type { IdeaStock, Intent, RelatedProject, PriorityCategory, TimeSlot } from '@/types';
-import { recommendBadgeStyle, formatDate } from '@/lib/utils';
+import { recommendBadgeStyle, formatDate, rankFromScore, rankBadgeStyle } from '@/lib/utils';
 
 type SortKey = 'recommend_score' | 'impact_score' | 'difficulty_score' | 'spread_score' | 'cost_score' | 'created_at' | 'hiroki_priority';
 
@@ -314,9 +314,14 @@ export default function StocksClient({ initialStocks }: { initialStocks: IdeaSto
                         </div>
                       )}
                     </div>
-                    <span className={`inline-flex items-center justify-center flex-shrink-0 min-w-[3.25rem] tabular-nums text-sm font-bold px-3 py-1 rounded-full ${recommendBadgeStyle(stock.recommend_score)}`}>
-                      {stock.recommend_score}点
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <span className={`inline-flex items-center justify-center min-w-[2rem] text-xs font-black px-2 py-1 rounded-lg ${rankBadgeStyle(rankFromScore(stock.recommend_score))}`}>
+                        {rankFromScore(stock.recommend_score)}
+                      </span>
+                      <span className={`inline-flex items-center justify-center min-w-[3.25rem] tabular-nums text-sm font-bold px-3 py-1 rounded-full ${recommendBadgeStyle(stock.recommend_score)}`}>
+                        {stock.recommend_score}点
+                      </span>
+                    </div>
                   </div>
                 )}
 

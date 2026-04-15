@@ -7,7 +7,7 @@ import StockMeta from './StockMeta';
 import RefinePanel from './RefinePanel';
 import SimilarPanel from './SimilarPanel';
 import type { IdeaStock, OperationType } from '@/types';
-import { recommendBadgeStyle, formatDate } from '@/lib/utils';
+import { recommendBadgeStyle, formatDate, rankFromScore, rankBadgeStyle } from '@/lib/utils';
 
 function operationTypeStyle(v: OperationType) {
   if (v === '放置型')    return 'bg-emerald-100 text-emerald-700';
@@ -191,11 +191,16 @@ export default async function StockDetailPage({
                 )}
 
                 <div className="flex items-start gap-4 pt-2">
-                  <span
-                    className={`inline-flex items-center justify-center min-w-[5rem] tabular-nums text-3xl font-bold px-5 py-2 rounded-xl flex-shrink-0 ${recommendBadgeStyle(stock.recommend_score)}`}
-                  >
-                    {stock.recommend_score}点
-                  </span>
+                  <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
+                    <span className={`inline-flex items-center justify-center min-w-[3rem] text-lg font-black px-3 py-1 rounded-lg ${rankBadgeStyle(rankFromScore(stock.recommend_score))}`}>
+                      {rankFromScore(stock.recommend_score)}
+                    </span>
+                    <span
+                      className={`inline-flex items-center justify-center min-w-[5rem] tabular-nums text-3xl font-bold px-5 py-2 rounded-xl ${recommendBadgeStyle(stock.recommend_score)}`}
+                    >
+                      {stock.recommend_score}点
+                    </span>
+                  </div>
                   {stock.recommend_reason && (
                     <p className="text-sm text-gray-600 leading-relaxed pt-2">{stock.recommend_reason}</p>
                   )}

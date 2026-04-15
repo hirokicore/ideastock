@@ -4,11 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Gem, Loader2, Save, X, TrendingUp, Wrench, RefreshCw, ArrowRight } from 'lucide-react';
 import type { RefineResult } from '@/types';
+import { rankFromScore, rankBadgeStyle } from '@/lib/utils';
 
 type State = 'idle' | 'loading' | 'result' | 'saving';
 
-function ScoreChange({ label, before, after }: { label: string; before?: number | null; after: number }) {
+function ScoreChange({ label, before, after, showRank }: { label: string; before?: number | null; after: number; showRank?: boolean }) {
   const diff = after - (before ?? 0);
+  const rank = rankFromScore(after);
   return (
     <div className="flex items-center gap-2 text-sm">
       <span className="text-gray-500 w-20">{label}</span>
@@ -20,6 +22,11 @@ function ScoreChange({ label, before, after }: { label: string; before?: number 
       {diff !== 0 && (
         <span className={`text-xs ${diff > 0 ? 'text-green-500' : 'text-red-400'}`}>
           ({diff > 0 ? '+' : ''}{diff})
+        </span>
+      )}
+      {showRank && (
+        <span className={`ml-1 text-xs font-black px-1.5 py-0.5 rounded ${rankBadgeStyle(rank)}`}>
+          {rank}
         </span>
       )}
     </div>
@@ -118,7 +125,7 @@ export default function RefinePanel({
           style={{ background: 'linear-gradient(135deg, #4d449e, #7058c0)', color: '#fff' }}
         >
           <Gem size={16} />
-          このアイデアを限界まで磨く
+          Sランクを目指して磨く
         </button>
         {error && (
           <p className="text-xs text-red-400">{error}</p>
@@ -131,7 +138,7 @@ export default function RefinePanel({
     return (
       <div className="flex flex-col items-center gap-3 py-6">
         <Loader2 size={28} className="animate-spin text-brand-400" />
-        <p className="text-sm text-gray-500">Claudeが3軸で分析・改善中...</p>
+        <p className="text-sm text-gray-500">Claudeがスコア100（Sランク）を目指して分析中...</p>
       </div>
     );
   }
@@ -212,7 +219,7 @@ export default function RefinePanel({
           <ScoreChange label="難易度" before={currentScores.difficulty} after={result.difficulty_score} />
           <ScoreChange label="継続性" before={currentScores.continuity} after={result.continuity_score} />
           <div className="border-t border-gray-700 pt-2 mt-2">
-            <ScoreChange label="総合" before={currentScores.recommend} after={result.recommend_score} />
+            <ScoreChange label="総合" before={currentScores.recommend} after={result.recommend_score} showRank />
           </div>
         </div>
 
