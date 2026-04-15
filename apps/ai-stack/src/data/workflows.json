@@ -99,6 +99,84 @@
     ]
   },
   {
+    "id": "idea-to-mvp",
+    "title": "アイデア→MVPサイト作成",
+    "emoji": "💡",
+    "description": "SランクアイデアからMVPサイトを立ち上げるまでの一気通貫フロー",
+    "steps": [
+      {
+        "order": 1,
+        "tool": "IdeaStock",
+        "mode": "manual",
+        "action": "アイデアSランク化",
+        "note": "IdeaStock上でアイデアを評価し、Sランクになったものだけ開発対象としてフラグを付ける。",
+        "fallbackTasks": [
+          "既存のアイデアを見直して、条件を満たすものがないかを再評価する。",
+          "まだ整理されていないメモやアイデアをIdeaStockに追加しておく。"
+        ]
+      },
+      {
+        "order": 2,
+        "tool": "Claude Chat",
+        "sub_tool": "ChatGPT",
+        "mode": "auto",
+        "action": "仕様整理・ページ構成",
+        "note": "Sランクのアイデアをもとに、画面一覧・機能一覧・API設計などの仕様を文章として整理する。",
+        "fallbackTasks": [
+          "Claude Chat で仕様の肉付けを行う（ユースケース・エッジケースなどを追加する）。",
+          "UI文言やコピーをChatGPTで改善する。"
+        ]
+      },
+      {
+        "order": 3,
+        "tool": "Claude Code",
+        "mode": "auto",
+        "action": "コード骨組み生成",
+        "note": "Next.js プロジェクトの雛形、ページ・ルーティング、基本的なコンポーネントとAPIの骨組みコードを生成する。Claude Codeが止まった場合は4へスキップし、後から戻ってきても良い。",
+        "fallbackTasks": [
+          "仕様のさらなる肉付け（画面ごとの詳細な挙動、バリデーション条件など）をClaude Chatで詰める。",
+          "Perplexity で関連サービスや実装例をリサーチして、仕様や設計に反映する。",
+          "IdeaStock に関連アイデアや拡張案をストックしておく。"
+        ]
+      },
+      {
+        "order": 4,
+        "tool": "Cursor",
+        "sub_tool": "Claude Code",
+        "mode": "auto",
+        "action": "細部修正・スタイル",
+        "note": "生成されたコードの細かい修正、型付け、コンポーネント分割、スタイル調整などを行う。",
+        "fallbackTasks": [
+          "UI文言のブラッシュアップ（Claude Chat）。",
+          "コンポーネント構成やディレクトリ構成の見直し案をClaude Chat/GPTに相談する。"
+        ]
+      },
+      {
+        "order": 5,
+        "tool": "n8n",
+        "mode": "auto",
+        "action": "バックグラウンド処理",
+        "note": "フォーム送信処理、通知、バッチ処理など、バックグラウンドで動くフローを必要な場合のみn8nで構築する。",
+        "fallbackTasks": [
+          "どのイベントでどんな自動処理が必要かをテキストで洗い出す（Claude Chat）。",
+          "n8n の既存ワークフローやテンプレートをPerplexityでリサーチする。"
+        ]
+      },
+      {
+        "order": 6,
+        "tool": "Hiroki",
+        "sub_tool": "Vercel",
+        "mode": "manual",
+        "action": "本番デプロイ確認",
+        "note": "ローカルまたはプレビュー環境で動作確認を行い、問題なければVercelにデプロイする。",
+        "fallbackTasks": [
+          "主要なユーザーフローを実際に触ってチェックリスト形式で検証する。",
+          "不明点や不具合をIssueとして記録し、次の開発サイクルの入力にする。"
+        ]
+      }
+    ]
+  },
+  {
     "id": "content",
     "title": "記事化・ドキュメント化",
     "emoji": "📝",
