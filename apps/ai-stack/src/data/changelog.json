@@ -1,0 +1,50 @@
+[
+  {
+    "date": "2026-04-14",
+    "title": "ai-stack サイト公開",
+    "description": "AIスタック配線図・ワークフロー・更新ログをまとめた自分用ダッシュボードを新規作成。",
+    "tags": ["新機能", "ai-stack"]
+  },
+  {
+    "date": "2026-04-13",
+    "title": "IdeaStock ランクシステム追加",
+    "description": "おすすめスコアからS/A+/A/B/Cランクを算出して一覧・詳細・磨く機能に表示。refineプロンプトをスコア100点（Sランク）目標に変更。",
+    "tags": ["改善", "ideastock"]
+  },
+  {
+    "date": "2026-04-12",
+    "title": "diagnosis アプリ公開",
+    "description": "「生きづらさタイプ診断」MVPを新規作成。名前＋月日の入力だけで8タイプ判定、X共有ボタン付き。",
+    "tags": ["新機能", "diagnosis"]
+  },
+  {
+    "date": "2026-04-10",
+    "title": "execution 放置型スコア連携",
+    "description": "タスク一覧に mental_weight（心理的重さ）を追加。軽い順にソートしてすぐ着手しやすいタスクを上位表示。",
+    "tags": ["改善", "execution"]
+  },
+  {
+    "date": "2026-04-08",
+    "title": "business-plan 放置型思想組み込み",
+    "description": "MVP生成プロンプトに placement_score / mental_score を追加。事業計画に「放置できるか」「心理的に軽いか」の観点を反映。",
+    "tags": ["改善", "business-plan"]
+  },
+  {
+    "date": "2026-04-05",
+    "title": "IdeaStock ひろき版優先順位スコア",
+    "description": "placement_score × mental_score × revenue_score ÷ cost_score の独自スコアを追加。既存48件をHaikuでバックフィル。",
+    "tags": ["新機能", "ideastock"]
+  },
+  {
+    "date": "2026-03-20",
+    "title": "Claude Haiku 4.5 導入",
+    "description": "大量バッチ処理用に Haiku モデルを採用。Sonnet比で大幅コスト削減。",
+    "tags": ["改善", "インフラ"]
+  },
+  {
+    "date": "2026-03-10",
+    "title": "execution アプリ公開",
+    "description": "タスク管理・実行追跡のためのシンプルなアプリを新規作成。Supabase RLS対応。",
+    "tags": ["新機能", "execution"]
+  }
+]

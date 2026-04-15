@@ -18,6 +18,9 @@
     "lint:ideastock": "npm run lint --workspace=apps/ideastock",
     "lint:business-plan": "npm run lint --workspace=apps/business-plan",
     "lint:execution": "npm run lint --workspace=apps/execution",
-    "lint:diagnosis": "npm run lint --workspace=apps/diagnosis"
+    "lint:diagnosis": "npm run lint --workspace=apps/diagnosis",
+    "dev:ai-stack": "npm run dev --workspace=apps/ai-stack",
+    "build:ai-stack": "npm run build --workspace=apps/ai-stack",
+    "lint:ai-stack": "npm run lint --workspace=apps/ai-stack"
   }
 }

@@ -1,0 +1,106 @@
+{
+  "commander": {
+    "name": "Claude Code",
+    "role": "司令塔",
+    "description": "コード生成・設計・実装の全工程を統括。ターミナル常駐型AIエージェント。",
+    "icon": "terminal",
+    "color": "#f97316"
+  },
+  "categories": [
+    {
+      "id": "coding",
+      "label": "コーディング",
+      "color": "#6d28d9",
+      "nodes": [
+        {
+          "name": "Claude Sonnet 4.6",
+          "role": "主力モデル",
+          "description": "Claude Codeのバックエンド。複雑な実装・設計・レビューに使用。",
+          "icon": "cpu"
+        },
+        {
+          "name": "Claude Haiku 4.5",
+          "role": "軽量バッチ処理",
+          "description": "大量データのバックフィル・簡易分類など、コスト重視タスクに使用。",
+          "icon": "zap"
+        }
+      ]
+    },
+    {
+      "id": "analysis",
+      "label": "分析・思考",
+      "color": "#0369a1",
+      "nodes": [
+        {
+          "name": "Claude Opus 4.6",
+          "role": "深い思考",
+          "description": "複雑な戦略立案・長文分析・アーキテクチャ設計の相談に使用。",
+          "icon": "brain"
+        },
+        {
+          "name": "Claude.ai",
+          "role": "対話型ブレスト",
+          "description": "アイデア出し・文章ブラッシュアップ・気軽な相談窓口。",
+          "icon": "message-circle"
+        }
+      ]
+    },
+    {
+      "id": "search",
+      "label": "検索・調査",
+      "color": "#047857",
+      "nodes": [
+        {
+          "name": "Perplexity",
+          "role": "リアルタイム検索",
+          "description": "最新情報・ニュース・競合調査に使用。Web検索付きAI。",
+          "icon": "search"
+        },
+        {
+          "name": "Gemini",
+          "role": "長文コンテキスト",
+          "description": "PDFや長大ドキュメントの要約・分析。100万トークン対応。",
+          "icon": "file-text"
+        }
+      ]
+    },
+    {
+      "id": "image",
+      "label": "画像・デザイン",
+      "color": "#be185d",
+      "nodes": [
+        {
+          "name": "Midjourney",
+          "role": "画像生成",
+          "description": "OGP画像・SNSビジュアル・プロダクトのサムネイル作成。",
+          "icon": "image"
+        },
+        {
+          "name": "Canva AI",
+          "role": "テンプレ編集",
+          "description": "既存テンプレートへのAI文章挿入・サイズ変換・バナー制作。",
+          "icon": "layout"
+        }
+      ]
+    },
+    {
+      "id": "infra",
+      "label": "インフラ・自動化",
+      "color": "#b45309",
+      "nodes": [
+        {
+          "name": "Vercel",
+          "role": "デプロイ",
+          "description": "Next.jsアプリの自動ビルド・デプロイ・プレビュー環境管理。",
+          "icon": "server"
+        },
+        {
+          "name": "Supabase",
+          "role": "DBホスティング",
+          "description": "PostgreSQL + Auth + Storage。全アプリのバックエンド。",
+          "icon": "database"
+        }
+      ]
+    }
+  ]
+}

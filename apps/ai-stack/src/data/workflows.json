@@ -1,0 +1,92 @@
+[
+  {
+    "id": "new-dev",
+    "title": "新規開発",
+    "emoji": "🚀",
+    "description": "ゼロから新機能・新アプリを立ち上げるフロー",
+    "steps": [
+      {
+        "order": 1,
+        "tool": "Claude.ai",
+        "action": "要件・アイデアを壁打ちして仕様を固める",
+        "note": "箇条書きで機能一覧を出してもらう"
+      },
+      {
+        "order": 2,
+        "tool": "Claude Code",
+        "action": "ディレクトリ構成・型定義・DB設計をレビュー",
+        "note": "CLAUDE.mdを更新してコンテキストを共有"
+      },
+      {
+        "order": 3,
+        "tool": "Claude Code",
+        "action": "実装・デバッグ・コードレビューをターミナルで完結",
+        "note": "Sonnet 4.6がバックエンドで動作"
+      },
+      {
+        "order": 4,
+        "tool": "Vercel",
+        "action": "プッシュ後に自動デプロイ・プレビューURLで確認",
+        "note": "本番反映はブランチマージ後"
+      }
+    ]
+  },
+  {
+    "id": "refactor",
+    "title": "リファクタ・改修",
+    "emoji": "🔧",
+    "description": "既存コードの品質改善・バグ修正・機能拡張",
+    "steps": [
+      {
+        "order": 1,
+        "tool": "Claude Code",
+        "action": "問題のファイルを読み込ませて原因分析",
+        "note": "エラーメッセージをそのままペーストする"
+      },
+      {
+        "order": 2,
+        "tool": "Claude Opus 4.6",
+        "action": "アーキテクチャ上の問題・設計判断が必要な場合に相談",
+        "note": "Claude.aiのプロジェクトで深掘り"
+      },
+      {
+        "order": 3,
+        "tool": "Claude Code",
+        "action": "修正実装・テスト・コミット",
+        "note": "変更範囲を最小限に保つ"
+      }
+    ]
+  },
+  {
+    "id": "content",
+    "title": "記事化・ドキュメント化",
+    "emoji": "📝",
+    "description": "実装ログやアイデアをnote・Xに発信するフロー",
+    "steps": [
+      {
+        "order": 1,
+        "tool": "IdeaStock",
+        "action": "Claude Codeとの作業ログ・気づきをストックに登録",
+        "note": "raw_textにSlack・メモをそのまま貼る"
+      },
+      {
+        "order": 2,
+        "tool": "Claude.ai",
+        "action": "ストックした内容をnote記事の構成に整理",
+        "note": "「〇〇向けに〜な記事を書いて」と指示"
+      },
+      {
+        "order": 3,
+        "tool": "Perplexity",
+        "action": "関連する最新トレンド・参考事例を調査して追記",
+        "note": "記事の信頼性・鮮度を上げる"
+      },
+      {
+        "order": 4,
+        "tool": "Midjourney",
+        "action": "記事のアイキャッチ画像を生成",
+        "note": "タイトルを英訳してプロンプトに使う"
+      }
+    ]
+  }
+]
