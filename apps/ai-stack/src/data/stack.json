@@ -1,106 +1,119 @@
-{
-  "commander": {
+[
+  {
+    "id": "claude-code",
     "name": "Claude Code",
-    "role": "司令塔",
-    "description": "コード生成・設計・実装の全工程を統括。ターミナル常駐型AIエージェント。",
-    "icon": "terminal",
-    "color": "#f97316"
+    "category": "code",
+    "role": "司令塔・コード実装",
+    "main_use_cases": ["新規アプリ実装", "バグ修正・リファクタ", "DB設計・型定義", "コミット・プッシュ管理"],
+    "when_to_call": "コードを書く・直す・設計するとき。ほぼ常時起動。",
+    "cost_level": "high",
+    "token_load": "heavy",
+    "priority": "first",
+    "status": "active",
+    "notes": "Sonnet 4.6がバックエンド。ターミナル常駐型。他AIへの指示を出す司令塔として位置づけ。"
   },
-  "categories": [
-    {
-      "id": "coding",
-      "label": "コーディング",
-      "color": "#6d28d9",
-      "nodes": [
-        {
-          "name": "Claude Sonnet 4.6",
-          "role": "主力モデル",
-          "description": "Claude Codeのバックエンド。複雑な実装・設計・レビューに使用。",
-          "icon": "cpu"
-        },
-        {
-          "name": "Claude Haiku 4.5",
-          "role": "軽量バッチ処理",
-          "description": "大量データのバックフィル・簡易分類など、コスト重視タスクに使用。",
-          "icon": "zap"
-        }
-      ]
-    },
-    {
-      "id": "analysis",
-      "label": "分析・思考",
-      "color": "#0369a1",
-      "nodes": [
-        {
-          "name": "Claude Opus 4.6",
-          "role": "深い思考",
-          "description": "複雑な戦略立案・長文分析・アーキテクチャ設計の相談に使用。",
-          "icon": "brain"
-        },
-        {
-          "name": "Claude.ai",
-          "role": "対話型ブレスト",
-          "description": "アイデア出し・文章ブラッシュアップ・気軽な相談窓口。",
-          "icon": "message-circle"
-        }
-      ]
-    },
-    {
-      "id": "search",
-      "label": "検索・調査",
-      "color": "#047857",
-      "nodes": [
-        {
-          "name": "Perplexity",
-          "role": "リアルタイム検索",
-          "description": "最新情報・ニュース・競合調査に使用。Web検索付きAI。",
-          "icon": "search"
-        },
-        {
-          "name": "Gemini",
-          "role": "長文コンテキスト",
-          "description": "PDFや長大ドキュメントの要約・分析。100万トークン対応。",
-          "icon": "file-text"
-        }
-      ]
-    },
-    {
-      "id": "image",
-      "label": "画像・デザイン",
-      "color": "#be185d",
-      "nodes": [
-        {
-          "name": "Midjourney",
-          "role": "画像生成",
-          "description": "OGP画像・SNSビジュアル・プロダクトのサムネイル作成。",
-          "icon": "image"
-        },
-        {
-          "name": "Canva AI",
-          "role": "テンプレ編集",
-          "description": "既存テンプレートへのAI文章挿入・サイズ変換・バナー制作。",
-          "icon": "layout"
-        }
-      ]
-    },
-    {
-      "id": "infra",
-      "label": "インフラ・自動化",
-      "color": "#b45309",
-      "nodes": [
-        {
-          "name": "Vercel",
-          "role": "デプロイ",
-          "description": "Next.jsアプリの自動ビルド・デプロイ・プレビュー環境管理。",
-          "icon": "server"
-        },
-        {
-          "name": "Supabase",
-          "role": "DBホスティング",
-          "description": "PostgreSQL + Auth + Storage。全アプリのバックエンド。",
-          "icon": "database"
-        }
-      ]
-    }
-  ]
-}
+  {
+    "id": "claude-chat",
+    "name": "Claude Chat",
+    "category": "chatbot",
+    "role": "設計・思考整理・戦略",
+    "main_use_cases": ["アーキテクチャ相談", "プロンプト設計", "文章ブラッシュアップ", "長期戦略の壁打ち"],
+    "when_to_call": "実装前の設計整理・複雑な判断が必要なとき。claude.aiを直接開く。",
+    "cost_level": "mid",
+    "token_load": "mid",
+    "priority": "first",
+    "status": "active",
+    "notes": "Opus 4.6 / Sonnet 4.6を用途で使い分け。プロジェクト機能でコンテキストを保持。"
+  },
+  {
+    "id": "chatgpt",
+    "name": "ChatGPT",
+    "category": "chatbot",
+    "role": "汎用・文章生成・軽い相談",
+    "main_use_cases": ["SNS文章生成", "メール・文書作成", "カジュアルなQA", "英語チェック"],
+    "when_to_call": "Claude以外の視点が欲しいとき・軽いタスクでコストを抑えたいとき。",
+    "cost_level": "low",
+    "token_load": "light",
+    "priority": "normal",
+    "status": "active",
+    "notes": "GPT-4oを主に使用。Claudeより文章のトーンが異なるので使い分けている。"
+  },
+  {
+    "id": "gemini",
+    "name": "Gemini",
+    "category": "search",
+    "role": "調査・マルチモーダル・YouTube要約",
+    "main_use_cases": ["YouTube動画の要約", "長大PDFの分析", "Google Workspace連携", "画像を含む資料解析"],
+    "when_to_call": "動画や長文ドキュメントをそのまま渡して要約・分析したいとき。",
+    "cost_level": "low",
+    "token_load": "heavy",
+    "priority": "normal",
+    "status": "active",
+    "notes": "100万トークンコンテキスト。YouTube URLを渡すと要約してくれる機能が便利。"
+  },
+  {
+    "id": "perplexity",
+    "name": "Perplexity",
+    "category": "search",
+    "role": "リサーチ・最新情報・裏取り",
+    "main_use_cases": ["最新ニュース調査", "競合サービス調査", "統計・数字の裏取り", "技術トレンドのキャッチアップ"],
+    "when_to_call": "リアルタイムの情報が必要なとき・事実確認が必要なとき。",
+    "cost_level": "low",
+    "token_load": "light",
+    "priority": "normal",
+    "status": "active",
+    "notes": "Web検索付きAI。出典URLが明示されるので裏取りに使いやすい。"
+  },
+  {
+    "id": "midjourney",
+    "name": "Midjourney",
+    "category": "image",
+    "role": "ビジュアル・画像生成",
+    "main_use_cases": ["OGP・アイキャッチ画像", "SNSビジュアル", "アプリのアイコン・イラスト", "プレゼン用ビジュアル"],
+    "when_to_call": "記事や投稿に使う画像が必要なとき。タイトルを英訳してプロンプトにする。",
+    "cost_level": "mid",
+    "token_load": "light",
+    "priority": "normal",
+    "status": "active",
+    "notes": "Discord経由で使用。v6が現在の主力。写真・イラスト両方に対応。"
+  },
+  {
+    "id": "cursor",
+    "name": "Cursor",
+    "category": "code",
+    "role": "コードエディタ補完",
+    "main_use_cases": ["IDE内インライン補完", "コード説明・ドキュメント生成", "大規模リポジトリ内の検索補完"],
+    "when_to_call": "Claude Codeでカバーできない大規模リポジトリ操作・エディタ内補完が必要なとき。",
+    "cost_level": "mid",
+    "token_load": "mid",
+    "priority": "last_resort",
+    "status": "candidate",
+    "notes": "現状はClaude Codeで十分なため未導入。大きめのプロジェクトに移行する際に検討。"
+  },
+  {
+    "id": "n8n",
+    "name": "n8n",
+    "category": "automation",
+    "role": "自動化・ワークフロー",
+    "main_use_cases": ["定期バッチ処理の自動化", "Webhook受信→AI処理→DB保存", "外部API連携フロー", "通知・アラート自動送信"],
+    "when_to_call": "繰り返し作業を自動化したいとき・複数サービスをつなぎたいとき。",
+    "cost_level": "low",
+    "token_load": "light",
+    "priority": "last_resort",
+    "status": "candidate",
+    "notes": "セルフホスト可能なノーコード自動化ツール。Zapier代替。規模が出てきたら導入予定。"
+  },
+  {
+    "id": "local-llm",
+    "name": "ローカルLLM",
+    "category": "other",
+    "role": "トークン節約・軽作業",
+    "main_use_cases": ["センシティブデータの処理", "大量ドキュメントの前処理・分類", "オフライン環境での利用"],
+    "when_to_call": "APIコストが課題になったとき・プライバシー上クラウドに送れないデータを処理するとき。",
+    "cost_level": "low",
+    "token_load": "light",
+    "priority": "last_resort",
+    "status": "candidate",
+    "notes": "Ollama + Llama 3 / Mistralが候補。現時点ではAPI料金が許容範囲のため未導入。"
+  }
+]
