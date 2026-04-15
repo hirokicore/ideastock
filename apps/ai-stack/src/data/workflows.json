@@ -177,6 +177,75 @@
     ]
   },
   {
+    "id": "multi-ai-mvp-factory",
+    "title": "マルチAI量産開発フロー",
+    "emoji": "🏭",
+    "description": "複数のAIを役割分担させ、設計→生成→配置→修正→デプロイを高速で回す量産開発フロー",
+    "steps": [
+      {
+        "order": 1,
+        "tool": "ChatGPT (GPT-4o)",
+        "sub_tool": "Perplexity",
+        "mode": "auto",
+        "action": "全体設計・フォルダ構造",
+        "note": "まずGPT-4oに要件を渡し、フォルダ階層とファイル一覧をツリー形式で出してもらう。必要に応じてPerplexityで類似サービスやライブラリ候補を調べる。",
+        "promptHint": "「〇〇なアプリを作りたいです。Next.js(または使用フレームワーク)で、推奨されるフォルダ構成と全ファイル一覧をツリー形式で出してください。」"
+      },
+      {
+        "order": 2,
+        "tool": "Gemini (AI Studio / Advanced)",
+        "sub_tool": "ChatGPT",
+        "mode": "auto",
+        "action": "全ファイルコード生成",
+        "note": "Geminiにフォルダ構成と要件を渡し、「全ファイルのコードを省略せずに出力」させる。長文でも止まりにくい前提で使う。",
+        "promptHint": "「このフォルダ構成と要件に基づいて、全てのファイルのコードを省略なしで出力してください。ファイル名のコメントを付けて順番にまとめてください。」"
+      },
+      {
+        "order": 3,
+        "tool": "Claude Code",
+        "mode": "auto",
+        "action": "コード配置・ビルド・実行",
+        "note": "Claude Codeは「考える」のではなく、「指定されたファイルを作って動かす」作業員として使う。プロジェクトルートには CLAUDE.md を置き、「日本語で回答・勝手に推論せず指示された配置に徹する」などの方針を書く。",
+        "promptHint": "「以下の指示に従って、ファイル作成と実行のみを行ってください。思考や提案は不要です。\n1. src/components/Task.tsx を作成し、下のコードをそのまま貼り付けてください。\n2. src/App.tsx を下のコードで上書きしてください。\n3. 不足しているライブラリがあれば npm install し、その後 npm run dev を実行してください。\n--- コード ---\n[ここにGeminiで生成したコードを貼る]」"
+      },
+      {
+        "order": 4,
+        "tool": "Perplexity",
+        "sub_tool": "Gemini",
+        "mode": "auto",
+        "action": "トラブルシューティング・修正草案",
+        "note": "まずエラー文をPerplexityに貼り付けて原因と最新の解決策を確認し、その上でGeminiに具体的な修正コードを出させる。",
+        "promptHint": "Perplexity:「次のエラーの原因と、現時点で推奨される解決策を教えてください。[エラー全文]」\nGemini:「このエラーを解消するために、どのファイルのどの部分をどう修正すべきか、修正後のコードを含めて具体的に教えてください。」"
+      },
+      {
+        "order": 5,
+        "tool": "Claude Code",
+        "mode": "auto",
+        "action": "修正差分の適用",
+        "note": "可能な限り「変更が必要な関数やブロックだけ」を渡し、Claude Codeにはどのファイルのどの位置を置き換えるかを明示する。",
+        "promptHint": "「src/auth/validateToken.ts の validateToken 関数だけを、以下のコードに差し替えてください。他の部分は触らないでください。\n--- 新しい関数コード ---\n...」"
+      },
+      {
+        "order": 6,
+        "tool": "ChatGPT",
+        "sub_tool": "Claude Chat",
+        "mode": "auto",
+        "action": "UI・コピー調整",
+        "note": "実際の画面キャプチャやコンポーネントコードを渡して、「わかりやすい日本語に」「トーンを統一」などを依頼する。",
+        "promptHint": "「このコンポーネントのUI文言を、初心者にもわかりやすい日本語に整えてください。トーンはフラットで丁寧にしてください。[コンポーネントコード]」"
+      },
+      {
+        "order": 7,
+        "tool": "Hiroki",
+        "sub_tool": "Vercel",
+        "mode": "manual",
+        "action": "本番確認・デプロイ",
+        "note": "主要なユーザーフローを実際に触ってチェックリスト形式で確認し、OKならデプロイ。バグや気づきはIssueとしてTodo化しておく。",
+        "promptHint": "（AIではなく自分用メモ）「/signup → /dashboard → /settings の3フローを必ず通ってからデプロイ」など。"
+      }
+    ]
+  },
+  {
     "id": "content",
     "title": "記事化・ドキュメント化",
     "emoji": "📝",
