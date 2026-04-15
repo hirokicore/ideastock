@@ -66,18 +66,21 @@
       {
         "order": 1,
         "tool": "Claude Chat",
+        "sub_tool": "Perplexity（必要時）",
         "action": "応募内容を確認・整理する",
         "note": "職種・経験・発信状況・自プロダクトとの相性を軸にチェック"
       },
       {
         "order": 2,
         "tool": "Claude Chat",
+        "sub_tool": "ChatGPT（別案生成）",
         "action": "ライト or ガッツリを判断して初回返信文を作成",
         "note": "応募の温度感に合わせてトーンを調整する"
       },
       {
         "order": 3,
-        "tool": "（自己判断）",
+        "tool": "Claude Chat",
+        "sub_tool": "Perplexity（発信確認時）",
         "action": "相性を3軸で判断する",
         "note": "現場課題が具体的か・オンライン利用可能か・フィードバックをくれそうか"
       },
@@ -89,8 +92,8 @@
       },
       {
         "order": 5,
-        "tool": "（自己判断）",
-        "action": "採用 or 見送りを確定して連絡",
+        "tool": "Claude Chat",
+        "action": "採用 or 見送りを確定して連絡文を作成",
         "note": "見送りの場合も丁寧に理由と感謝を添える"
       }
     ]

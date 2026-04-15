@@ -37,12 +37,17 @@ function WorkflowCard({ workflow }: { workflow: Workflow }) {
                   {step.order}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-1.5 flex-wrap mb-1">
                     <span className="text-xs font-bold text-brand-700 bg-brand-50 px-2 py-0.5 rounded-md">
                       {step.tool}
                     </span>
-                    <p className="text-sm text-gray-700">{step.action}</p>
+                    {'sub_tool' in step && step.sub_tool && (
+                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">
+                        +{step.sub_tool}
+                      </span>
+                    )}
                   </div>
+                  <p className="text-sm text-gray-700">{step.action}</p>
                   {step.note && (
                     <p className="text-xs text-gray-400 mt-1 leading-relaxed">{step.note}</p>
                   )}
