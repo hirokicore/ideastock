@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import Link from 'next/link';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import workflowsData from '@/data/workflows.json';
 
 type Workflow = typeof workflowsData[number];
@@ -55,6 +56,17 @@ function WorkflowCard({ workflow }: { workflow: Workflow }) {
               </div>
             ))}
           </div>
+          {workflow.id === 'multi-ai-mvp-factory' && (
+            <div className="mt-4 pt-3 border-t border-gray-100">
+              <Link
+                href="/workflows/multi-ai-mvp-factory"
+                className="inline-flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-700 transition-colors"
+              >
+                詳細ページを見る
+                <ChevronRight size={12} />
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </div>
