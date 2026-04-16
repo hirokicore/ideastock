@@ -13,6 +13,7 @@ import {
   Sparkles,
   ChevronRight,
   Users,
+  Layers,
 } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────
@@ -491,6 +492,74 @@ export default function MultiAiMvpFactoryPage() {
               目的：同じ場所を何度も書き換えて発生する無駄なトークン消費を減らし、まとめて実装することで変更の一貫性を保つ。
             </p>
           </div>
+        </section>
+
+        {/* ── 改善の分類 ── */}
+        <section className="mb-12">
+          <SectionTitle icon={<Layers size={16} />} title="改善の分類" />
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm mb-4">
+            <p className="text-sm text-gray-700 leading-relaxed mb-3">
+              このフローは単なる開発手順ではなく、実行全体の骨組み（OS）として扱う。
+              OSは固定物ではなく改善対象だが、思いつくたびに都度改修するのではなく、改善案を分類して管理する。
+            </p>
+            <p className="text-xs font-medium text-brand-700 bg-brand-50 border border-brand-200 rounded-lg px-4 py-2.5">
+              目的は「改善し続けること」ではなく、「改善を価値に変えること」。
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[
+              {
+                label: '今すぐ直す',
+                tag: '緊急',
+                desc: '現在の実行を止めている不具合や重大な使いづらさ。今修正する価値が高いもの。',
+                card: 'border-rose-200 bg-rose-50',
+                badge: 'bg-rose-100 text-rose-700',
+                dot: 'bg-rose-500',
+                text: 'text-rose-900',
+              },
+              {
+                label: 'メモに積む',
+                tag: '保留',
+                desc: '気づいたが、今すぐ直さなくても進行には影響しないもの。後でまとめて見直す候補。',
+                card: 'border-blue-200 bg-blue-50',
+                badge: 'bg-blue-100 text-blue-700',
+                dot: 'bg-blue-400',
+                text: 'text-blue-900',
+              },
+              {
+                label: '拡張パック待ち',
+                tag: '一括',
+                desc: '単体ではなく、他の改善案とまとめて実装した方が効率が良いもの。一括改修向き。',
+                card: 'border-brand-200 bg-brand-50',
+                badge: 'bg-brand-100 text-brand-700',
+                dot: 'bg-brand-500',
+                text: 'text-brand-900',
+              },
+              {
+                label: '触らない',
+                tag: '低優先',
+                desc: '改善余地はあるが、現時点では優先度が低いもの。改善コストに対して効果が小さい。',
+                card: 'border-gray-200 bg-gray-50',
+                badge: 'bg-gray-100 text-gray-500',
+                dot: 'bg-gray-400',
+                text: 'text-gray-700',
+              },
+            ].map((item) => (
+              <div key={item.label} className={`border rounded-xl p-4 ${item.card}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${item.dot}`} />
+                  <p className="text-sm font-semibold text-gray-900">{item.label}</p>
+                  <span className={`ml-auto text-xs font-medium px-2 py-0.5 rounded-full ${item.badge}`}>
+                    {item.tag}
+                  </span>
+                </div>
+                <p className={`text-xs leading-relaxed ${item.text}`}>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-gray-400">
+            同じ場所への細かい書き換えを繰り返すと、無駄なトークン消費と手戻りが増える。分類を使って、改修のタイミングを意図的にコントロールする。
+          </p>
         </section>
 
         {/* ── デプロイ補足 ── */}
