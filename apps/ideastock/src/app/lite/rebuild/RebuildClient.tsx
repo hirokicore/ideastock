@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Copy, Check, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
+import { Copy, Check, ChevronDown, ChevronUp, ExternalLink, Save } from 'lucide-react';
 import Link from 'next/link';
 import type { IdeaStock } from '@/types';
 
 // ──────────────────────────────────────────────
-// Helpers
+// Prompt definitions（field → prompt template）
 // ──────────────────────────────────────────────
 type FieldGap = {
   field: string;
@@ -30,7 +30,7 @@ const FIELD_GAPS: FieldGap[] = [
   },
   {
     field: 'impact_score',
-    label: 'スコア（全軸）',
+    label: 'スコア（全6軸）',
     checkMissing: (s) => s.impact_score == null,
     prompt: (s) => `以下のアイデアを1〜5のスコアで評価してください（「スコア名: 数値 // 理由」形式）。
 
@@ -63,16 +63,13 @@ const FIELD_GAPS: FieldGap[] = [
   },
 ];
 
-function isMissing(s: IdeaStock, f: FieldGap) {
-  return f.checkMissing(s);
-}
-
+function isMissing(s: IdeaStock, f: FieldGap) { return f.checkMissing(s); }
 function gapCount(s: IdeaStock) {
   return FIELD_GAPS.filter((f) => f.field !== 'summary_refine' && isMissing(s, f)).length;
 }
 
 // ──────────────────────────────────────────────
-// PromptCard
+// Sub-components
 // ──────────────────────────────────────────────
 function PromptCard({ label, prompt }: { label: string; prompt: string }) {
   const [copied, setCopied] = useState(false);
@@ -87,7 +84,7 @@ function PromptCard({ label, prompt }: { label: string; prompt: string }) {
       <div className="flex items-center justify-between">
         <button onClick={() => setOpen((v) => !v)} className="flex items-center gap-1.5 text-xs font-medium text-gray-600">
           {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-          {label}
+          AIプロンプト: {label}
         </button>
         <button onClick={copy} className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg"
           style={{ backgroundColor: '#2e2b50', color: '#a8a4cc' }}>
@@ -104,17 +101,159 @@ function PromptCard({ label, prompt }: { label: string; prompt: string }) {
   );
 }
 
+function ScoreInput({ label, value, onChange }: {
+  label: string; value: string; onChange: (v: string) => void;
+}) {
+  return (
+    <div>
+      <div className="text-[11px] text-gray-400 mb-1">{label}</div>
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            key={n}
+            type="button"
+            onClick={() => onChange(value === String(n) ? '' : String(n))}
+            className={`w-8 h-8 rounded-lg text-xs font-bold transition-colors ${
+              value === String(n) ? 'bg-brand-400 text-white' : 'text-gray-500'
+            }`}
+            style={value !== String(n) ? { backgroundColor: '#2e2b50' } : {}}
+          >
+            {n}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ──────────────────────────────────────────────
-// Stock row
+// Edit form state per stock
 // ──────────────────────────────────────────────
-function StockRebuildRow({ stock }: { stock: IdeaStock }) {
+type ScoreFields = {
+  impact_score: string;
+  difficulty_score: string;
+  continuity_score: string;
+  placement_score: string;
+  mental_score: string;
+  revenue_score: string;
+};
+
+type EditState = {
+  summary: string;
+  tags: string;       // comma-separated
+  scores: ScoreFields;
+};
+
+function initEdit(s: IdeaStock): EditState {
+  return {
+    summary: s.summary ?? '',
+    tags: s.tags?.join(', ') ?? '',
+    scores: {
+      impact_score:     s.impact_score     != null ? String(s.impact_score)     : '',
+      difficulty_score: s.difficulty_score != null ? String(s.difficulty_score) : '',
+      continuity_score: s.continuity_score != null ? String(s.continuity_score) : '',
+      placement_score:  s.placement_score  != null ? String(s.placement_score)  : '',
+      mental_score:     s.mental_score     != null ? String(s.mental_score)     : '',
+      revenue_score:    s.revenue_score    != null ? String(s.revenue_score)    : '',
+    },
+  };
+}
+
+const SCORE_LABELS: { key: keyof ScoreFields; label: string }[] = [
+  { key: 'impact_score',     label: 'インパクト' },
+  { key: 'difficulty_score', label: '難易度（5=最難）' },
+  { key: 'continuity_score', label: '継続性' },
+  { key: 'placement_score',  label: '放置度（5=放置型）' },
+  { key: 'mental_score',     label: '心理的軽さ' },
+  { key: 'revenue_score',    label: '収益ポテンシャル' },
+];
+
+// ──────────────────────────────────────────────
+// Stock row with editable fields
+// ──────────────────────────────────────────────
+function StockRebuildRow({ stock: initialStock }: { stock: IdeaStock }) {
+  const [stock, setStock] = useState<IdeaStock>(initialStock);
   const [open, setOpen] = useState(false);
+  const [edit, setEdit] = useState<EditState>(() => initEdit(initialStock));
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState<{ ok: boolean; msg: string } | null>(null);
+
   const gaps = FIELD_GAPS.filter((f) => f.field !== 'summary_refine' && isMissing(stock, f));
   const hasGaps = gaps.length > 0;
 
+  const showToast = (ok: boolean, msg: string) => {
+    setToast({ ok, msg });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    // 変更のあったフィールドだけを収集
+    const payload: Record<string, unknown> = {};
+
+    const trimmedSummary = edit.summary.trim();
+    if (trimmedSummary !== (stock.summary ?? '')) {
+      payload.summary = trimmedSummary || null;
+    }
+
+    const newTags = edit.tags.split(',').map((t) => t.trim()).filter(Boolean);
+    const oldTags = stock.tags ?? [];
+    if (JSON.stringify(newTags) !== JSON.stringify(oldTags)) {
+      payload.tags = newTags;
+    }
+
+    for (const { key } of SCORE_LABELS) {
+      const newVal = edit.scores[key];
+      const oldVal = stock[key] != null ? String(stock[key]) : '';
+      if (newVal !== oldVal) {
+        payload[key] = newVal ? Number(newVal) : null;
+      }
+    }
+
+    if (Object.keys(payload).length === 0) {
+      showToast(false, '変更がありません');
+      setSaving(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/stocks/${stock.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const { error } = await res.json();
+        showToast(false, error ?? '保存に失敗しました');
+        return;
+      }
+      // ローカル状態を更新（充足状況バッジを即時反映）
+      const updated: IdeaStock = {
+        ...stock,
+        summary: 'summary' in payload ? (payload.summary as string | null) : stock.summary,
+        tags:    'tags'    in payload ? (payload.tags as string[])         : stock.tags,
+        impact_score:     'impact_score'     in payload ? (payload.impact_score     as number | null) : stock.impact_score,
+        difficulty_score: 'difficulty_score' in payload ? (payload.difficulty_score as number | null) : stock.difficulty_score,
+        continuity_score: 'continuity_score' in payload ? (payload.continuity_score as number | null) : stock.continuity_score,
+        placement_score:  'placement_score'  in payload ? (payload.placement_score  as number | null) : stock.placement_score,
+        mental_score:     'mental_score'     in payload ? (payload.mental_score     as number | null) : stock.mental_score,
+        revenue_score:    'revenue_score'    in payload ? (payload.revenue_score    as number | null) : stock.revenue_score,
+      };
+      setStock(updated);
+      setEdit(initEdit(updated));
+      showToast(true, '保存しました');
+    } catch {
+      showToast(false, 'ネットワークエラー');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updatedGaps = FIELD_GAPS.filter((f) => f.field !== 'summary_refine' && isMissing(stock, f));
+
   return (
     <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: '#252240', borderColor: '#3a3660' }}>
-      {/* Header row */}
+      {/* Header */}
       <button
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-brand-50 transition-colors"
@@ -123,7 +262,7 @@ function StockRebuildRow({ stock }: { stock: IdeaStock }) {
           <span className="text-sm font-medium text-gray-800 truncate">{stock.title}</span>
           {hasGaps ? (
             <span className="badge bg-yellow-100 text-yellow-700 text-[10px] flex-shrink-0">
-              不足 {gaps.length}件
+              不足 {updatedGaps.length}件
             </span>
           ) : (
             <span className="badge bg-green-100 text-green-700 text-[10px] flex-shrink-0">フィールド充足</span>
@@ -143,55 +282,119 @@ function StockRebuildRow({ stock }: { stock: IdeaStock }) {
 
       {/* Expanded */}
       {open && (
-        <div className="border-t px-4 py-4 space-y-4" style={{ borderColor: '#3a3660' }}>
+        <div className="border-t px-4 py-4 space-y-5" style={{ borderColor: '#3a3660' }}>
 
-          {/* Missing fields */}
-          {hasGaps && (
-            <div>
-              <p className="text-xs text-yellow-700 mb-3">
-                以下のフィールドが未入力です。プロンプトを外部AIに貼り付け、結果を詳細ページで更新してください。
-              </p>
-              <div className="space-y-2">
-                {gaps.map((f) => (
-                  <PromptCard key={f.field} label={`${f.label}を生成`} prompt={f.prompt(stock)} />
-                ))}
-              </div>
+          {/* Toast */}
+          {toast && (
+            <div className={`text-xs px-3 py-2 rounded-lg ${toast.ok ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+              {toast.msg}
             </div>
           )}
 
-          {/* Refine (always shown) */}
-          <div>
-            <p className="text-xs text-gray-400 mb-2">改善提案（既存フィールドを更新したい場合）</p>
+          {/* ── 要約 ── */}
+          {FIELD_GAPS.find((f) => f.field === 'summary') && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-gray-700">要約</span>
+                {!stock.summary
+                  ? <span className="badge bg-yellow-100 text-yellow-700 text-[10px]">未入力</span>
+                  : <span className="badge bg-green-100 text-green-700 text-[10px]">入力済み</span>}
+              </div>
+              <textarea
+                className="form-textarea text-xs"
+                rows={3}
+                value={edit.summary}
+                onChange={(e) => setEdit((p) => ({ ...p, summary: e.target.value }))}
+                placeholder="2〜3文の要約を入力してください"
+              />
+              <PromptCard label="要約生成" prompt={FIELD_GAPS.find((f) => f.field === 'summary')!.prompt(stock)} />
+            </div>
+          )}
+
+          {/* ── タグ ── */}
+          {FIELD_GAPS.find((f) => f.field === 'tags') && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-gray-700">タグ</span>
+                {!stock.tags?.length
+                  ? <span className="badge bg-yellow-100 text-yellow-700 text-[10px]">未入力</span>
+                  : <span className="badge bg-green-100 text-green-700 text-[10px]">入力済み</span>}
+              </div>
+              <input
+                className="form-input text-xs"
+                value={edit.tags}
+                onChange={(e) => setEdit((p) => ({ ...p, tags: e.target.value }))}
+                placeholder="SaaS, フィットネス, 自動化（カンマ区切り）"
+              />
+              <PromptCard label="タグ抽出" prompt={FIELD_GAPS.find((f) => f.field === 'tags')!.prompt(stock)} />
+            </div>
+          )}
+
+          {/* ── スコア ── */}
+          {FIELD_GAPS.find((f) => f.field === 'impact_score') && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-gray-700">スコア（全6軸）</span>
+                {stock.impact_score == null
+                  ? <span className="badge bg-yellow-100 text-yellow-700 text-[10px]">未入力</span>
+                  : <span className="badge bg-green-100 text-green-700 text-[10px]">入力済み</span>}
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {SCORE_LABELS.map(({ key, label }) => (
+                  <ScoreInput
+                    key={key}
+                    label={label}
+                    value={edit.scores[key]}
+                    onChange={(v) => setEdit((p) => ({ ...p, scores: { ...p.scores, [key]: v } }))}
+                  />
+                ))}
+              </div>
+              <PromptCard label="スコアリング" prompt={FIELD_GAPS.find((f) => f.field === 'impact_score')!.prompt(stock)} />
+            </div>
+          )}
+
+          {/* ── 保存ボタン ── */}
+          <div className="flex justify-end pt-1">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="btn-primary text-xs py-2 px-4"
+            >
+              {saving ? '保存中…' : <><Save size={13} /> このストックを保存</>}
+            </button>
+          </div>
+
+          {/* ── 改善プロンプト（always shown） ── */}
+          <div className="border-t pt-4" style={{ borderColor: '#3a3660' }}>
+            <p className="text-xs text-gray-400 mb-2">改善提案（既存フィールドを全体的に更新したい場合）</p>
             <PromptCard
-              label="アイデア改善プロンプト（refine代替）"
+              label="アイデア改善（refine代替）"
               prompt={FIELD_GAPS.find((f) => f.field === 'summary_refine')!.prompt(stock)}
             />
           </div>
 
-          {/* Current field status */}
-          <div className="pt-1">
+          {/* ── 充足状況 ── */}
+          <div>
             <p className="text-xs text-gray-400 mb-2">フィールド充足状況</p>
             <div className="flex flex-wrap gap-2">
-              {[
-                ['要約', !!stock.summary],
-                ['タグ', !!stock.tags?.length],
+              {([
+                ['要約',  !!stock.summary],
+                ['タグ',  !!stock.tags?.length],
                 ['スコア', stock.impact_score != null],
-                ['用途', !!stock.intent],
+                ['用途',  !!stock.intent],
                 ['優先度', !!stock.priority_category],
-                ['時期', !!stock.time_slot],
+                ['時期',  !!stock.time_slot],
                 ['放置度', stock.placement_score != null],
-                ['心理', stock.mental_score != null],
-                ['収益', stock.revenue_score != null],
-              ].map(([label, ok]) => (
-                <span
-                  key={label as string}
-                  className={`badge text-[10px] ${ok ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}
-                >
+                ['心理',  stock.mental_score != null],
+                ['収益',  stock.revenue_score != null],
+              ] as [string, boolean][]).map(([label, ok]) => (
+                <span key={label} className={`badge text-[10px] ${ok ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'}`}>
                   {ok ? '✓' : '✕'} {label}
                 </span>
               ))}
             </div>
           </div>
+
         </div>
       )}
     </div>
@@ -213,19 +416,19 @@ export default function RebuildClient({ stocks }: { stocks: IdeaStock[] }) {
       <div>
         <h1 className="text-xl font-bold text-gray-900 mb-2">既存ストック再構築</h1>
         <p className="text-sm text-gray-500 leading-relaxed">
-          既存データの不足フィールドを特定し、外部AIへのプロンプトを生成します。
-          結果を詳細ページ（/stocks/[id]）に転記することで、Liteワークフローで補完できます。
+          不足フィールドを直接編集して保存できます。
+          AIプロンプトをコピーして外部AIで処理し、結果を貼り付けてから保存してください。
         </p>
       </div>
 
       {/* Summary */}
       <div className="grid grid-cols-3 gap-3">
-        {[
+        {([
           ['総ストック数', stocks.length, 'text-gray-700'],
-          ['要補完あり', stocks.filter((s) => gapCount(s) > 0).length, 'text-yellow-700'],
-          ['充足済み', stocks.filter((s) => gapCount(s) === 0).length, 'text-green-700'],
-        ].map(([label, count, color]) => (
-          <div key={label as string} className="rounded-xl border p-4 text-center" style={{ backgroundColor: '#252240', borderColor: '#3a3660' }}>
+          ['要補完あり',  stocks.filter((s) => gapCount(s) > 0).length, 'text-yellow-700'],
+          ['充足済み',    stocks.filter((s) => gapCount(s) === 0).length, 'text-green-700'],
+        ] as [string, number, string][]).map(([label, count, color]) => (
+          <div key={label} className="rounded-xl border p-4 text-center" style={{ backgroundColor: '#252240', borderColor: '#3a3660' }}>
             <div className={`text-2xl font-black ${color}`}>{count}</div>
             <div className="text-xs text-gray-400 mt-1">{label}</div>
           </div>
@@ -236,18 +439,14 @@ export default function RebuildClient({ stocks }: { stocks: IdeaStock[] }) {
       <div className="flex items-center gap-3">
         <button
           onClick={() => setShowOnlyGaps(true)}
-          className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
-            showOnlyGaps ? 'bg-brand-400 text-white' : 'text-gray-500'
-          }`}
+          className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${showOnlyGaps ? 'bg-brand-400 text-white' : 'text-gray-500'}`}
           style={!showOnlyGaps ? { backgroundColor: '#2e2b50' } : {}}
         >
           要補完のみ表示
         </button>
         <button
           onClick={() => setShowOnlyGaps(false)}
-          className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
-            !showOnlyGaps ? 'bg-brand-400 text-white' : 'text-gray-500'
-          }`}
+          className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${!showOnlyGaps ? 'bg-brand-400 text-white' : 'text-gray-500'}`}
           style={showOnlyGaps ? { backgroundColor: '#2e2b50' } : {}}
         >
           全件表示

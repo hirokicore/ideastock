@@ -19,6 +19,15 @@ export async function PATCH(
     priority_category?: PriorityCategory;
     time_slot?: TimeSlot;
     lite_status?: LiteStatus;
+    // rebuild で補完可能なフィールド
+    summary?: string;
+    tags?: string[];
+    impact_score?: number;
+    difficulty_score?: number;
+    continuity_score?: number;
+    placement_score?: number;
+    mental_score?: number;
+    revenue_score?: number;
   };
   try {
     body = await request.json();
@@ -34,7 +43,7 @@ export async function PATCH(
     lite_status: ['未整理', '軽処理済み', '外部AI処理待ち', '入力戻し待ち', '詳細化済み', '要修正'] as LiteStatus[],
   };
 
-  const update: Record<string, string> = {};
+  const update: Record<string, unknown> = {};
 
   if (body.intent !== undefined) {
     if (!allowed.intent.includes(body.intent)) return NextResponse.json({ error: '用途の値が不正です' }, { status: 400 });
@@ -55,6 +64,28 @@ export async function PATCH(
   if (body.lite_status !== undefined) {
     if (!allowed.lite_status.includes(body.lite_status)) return NextResponse.json({ error: 'Liteステータスの値が不正です' }, { status: 400 });
     update.lite_status = body.lite_status;
+  }
+
+  // rebuild 補完フィールド
+  if (body.summary !== undefined) {
+    if (typeof body.summary !== 'string') return NextResponse.json({ error: '要約の値が不正です' }, { status: 400 });
+    update.summary = body.summary;
+  }
+  if (body.tags !== undefined) {
+    if (!Array.isArray(body.tags) || body.tags.some((t) => typeof t !== 'string')) {
+      return NextResponse.json({ error: 'タグの値が不正です' }, { status: 400 });
+    }
+    update.tags = body.tags;
+  }
+  const SCORE_FIELDS = ['impact_score', 'difficulty_score', 'continuity_score', 'placement_score', 'mental_score', 'revenue_score'] as const;
+  for (const field of SCORE_FIELDS) {
+    if (body[field] !== undefined) {
+      const v = body[field];
+      if (typeof v !== 'number' || !Number.isInteger(v) || v < 1 || v > 5) {
+        return NextResponse.json({ error: `${field} は 1〜5 の整数で指定してください` }, { status: 400 });
+      }
+      update[field] = v;
+    }
   }
 
   if (Object.keys(update).length === 0) {
