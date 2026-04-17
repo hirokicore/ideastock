@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Brain, Plus, List, LogOut } from 'lucide-react';
+import { Brain, Plus, List, LogOut, Zap } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function Header() {
@@ -39,6 +39,17 @@ export default function Header() {
         <nav className="flex items-center gap-1">
           {navLink('/stocks', '一覧', List)}
           {navLink('/new', '新規登録', Plus)}
+          <Link
+            href="/lite"
+            className={`flex items-center gap-1.5 text-sm px-3 py-2 rounded-lg transition-colors ml-1 ${
+              pathname.startsWith('/lite')
+                ? 'bg-brand-50 text-brand-700 font-medium'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+            }`}
+          >
+            <Zap size={16} />
+            Lite
+          </Link>
           <button
             onClick={handleSignOut}
             className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors ml-1"
