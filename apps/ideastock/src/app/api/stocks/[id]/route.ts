@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import type { Intent, RelatedProject, PriorityCategory, TimeSlot } from '@/types';
+import type { Intent, RelatedProject, PriorityCategory, TimeSlot, LiteStatus } from '@/types';
 
 export async function PATCH(
   request: NextRequest,
@@ -18,6 +18,7 @@ export async function PATCH(
     related_project?: RelatedProject;
     priority_category?: PriorityCategory;
     time_slot?: TimeSlot;
+    lite_status?: LiteStatus;
   };
   try {
     body = await request.json();
@@ -30,6 +31,7 @@ export async function PATCH(
     related_project: ['TrainerDocs', 'IdeaStock', 'その他'] as RelatedProject[],
     priority_category: ['今すぐ', '仕込み', '挑戦'] as PriorityCategory[],
     time_slot: ['今月', '3ヶ月以内', '半年〜', 'いつか'] as TimeSlot[],
+    lite_status: ['未整理', '軽処理済み', '外部AI処理待ち', '入力戻し待ち', '詳細化済み', '要修正'] as LiteStatus[],
   };
 
   const update: Record<string, string> = {};
@@ -49,6 +51,10 @@ export async function PATCH(
   if (body.time_slot !== undefined) {
     if (!allowed.time_slot.includes(body.time_slot)) return NextResponse.json({ error: '時期の値が不正です' }, { status: 400 });
     update.time_slot = body.time_slot;
+  }
+  if (body.lite_status !== undefined) {
+    if (!allowed.lite_status.includes(body.lite_status)) return NextResponse.json({ error: 'Liteステータスの値が不正です' }, { status: 400 });
+    update.lite_status = body.lite_status;
   }
 
   if (Object.keys(update).length === 0) {

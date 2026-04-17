@@ -1,4 +1,5 @@
 export type SourcePlatform = 'Claude' | 'ChatGPT' | 'Perplexity' | 'Gemini' | 'Memo';
+export type LiteStatus = '未整理' | '軽処理済み' | '外部AI処理待ち' | '入力戻し待ち' | '詳細化済み' | '要修正';
 export type Intent = '商品化' | '検討中' | 'メモ';
 export type RelatedProject = 'TrainerDocs' | 'IdeaStock' | 'その他';
 export type PriorityCategory = '今すぐ' | '仕込み' | '挑戦';
@@ -34,6 +35,7 @@ export type IdeaStock = {
   revenue_score?: number | null;
   related_ids?: string[];
   variations?: Variation[];
+  lite_status?: LiteStatus | null;
   created_at: string;
 };
 

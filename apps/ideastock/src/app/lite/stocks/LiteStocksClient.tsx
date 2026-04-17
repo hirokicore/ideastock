@@ -2,24 +2,34 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import type { IdeaStock, Intent, PriorityCategory } from '@/types';
+import type { IdeaStock, LiteStatus, Intent, PriorityCategory } from '@/types';
 import { formatDate } from '@/lib/utils';
 
 // ──────────────────────────────────────────────
-// Lite status (stored in localStorage)
+// Constants
 // ──────────────────────────────────────────────
-export type LiteStatus =
-  | '未整理'
-  | '軽処理済み'
-  | '外部AI処理待ち'
-  | '入力戻し待ち'
-  | '詳細化済み'
-  | '要修正';
-
 const STATUS_LIST: LiteStatus[] = [
   '未整理', '軽処理済み', '外部AI処理待ち', '入力戻し待ち', '詳細化済み', '要修正',
 ];
 
+const LS_KEY = 'ideastock_lite_status';
+
+// ──────────────────────────────────────────────
+// localStorage helpers (backup / offline fallback)
+// ──────────────────────────────────────────────
+function loadLsStatuses(): Record<string, LiteStatus> {
+  if (typeof window === 'undefined') return {};
+  try { return JSON.parse(localStorage.getItem(LS_KEY) ?? '{}'); } catch { return {}; }
+}
+
+function saveLsStatus(id: string, s: LiteStatus) {
+  const current = loadLsStatuses();
+  localStorage.setItem(LS_KEY, JSON.stringify({ ...current, [id]: s }));
+}
+
+// ──────────────────────────────────────────────
+// Styles
+// ──────────────────────────────────────────────
 function statusStyle(s: LiteStatus): string {
   switch (s) {
     case '未整理':         return 'bg-gray-100 text-gray-500';
@@ -31,20 +41,6 @@ function statusStyle(s: LiteStatus): string {
   }
 }
 
-const LS_KEY = 'ideastock_lite_status';
-
-function loadStatuses(): Record<string, LiteStatus> {
-  if (typeof window === 'undefined') return {};
-  try { return JSON.parse(localStorage.getItem(LS_KEY) ?? '{}'); } catch { return {}; }
-}
-
-function saveStatuses(m: Record<string, LiteStatus>) {
-  localStorage.setItem(LS_KEY, JSON.stringify(m));
-}
-
-// ──────────────────────────────────────────────
-// Component
-// ──────────────────────────────────────────────
 function intentStyle(v: Intent) {
   if (v === '商品化') return 'bg-green-100 text-green-700';
   if (v === '検討中') return 'bg-yellow-100 text-yellow-700';
@@ -57,40 +53,67 @@ function priorityStyle(v: PriorityCategory) {
   return 'bg-purple-100 text-purple-700';
 }
 
+// ──────────────────────────────────────────────
+// Main component
+// ──────────────────────────────────────────────
 export default function LiteStocksClient({ initialStocks }: { initialStocks: IdeaStock[] }) {
-  const [statuses, setStatuses] = useState<Record<string, LiteStatus>>({});
+  // クライアント側のステータスオーバーレイ
+  // 優先順位: Supabase値(initialStocks) > localStorage(バックアップ) > デフォルト'未整理'
+  const [localOverride, setLocalOverride] = useState<Record<string, LiteStatus>>({});
+  const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [filterStatus, setFilterStatus] = useState<LiteStatus | 'すべて'>('すべて');
   const [filterIntent, setFilterIntent] = useState<Intent | 'すべて'>('すべて');
 
-  useEffect(() => { setStatuses(loadStatuses()); }, []);
+  // 初回マウント時: localStorageをバックアップとして読み込む
+  // (Supabaseに値がないストックのフォールバック用)
+  useEffect(() => {
+    setLocalOverride(loadLsStatuses());
+  }, []);
 
-  const setStatus = (id: string, s: LiteStatus) => {
-    setStatuses((prev) => {
-      const next = { ...prev, [id]: s };
-      saveStatuses(next);
-      return next;
-    });
+  // Supabase値を正として、なければlocalStorage、なければデフォルト
+  const statusOf = (stock: IdeaStock): LiteStatus =>
+    stock.lite_status ?? localOverride[stock.id] ?? '未整理';
+
+  const handleStatusChange = async (stock: IdeaStock, next: LiteStatus) => {
+    // 楽観的UI更新
+    setLocalOverride((prev) => ({ ...prev, [stock.id]: next }));
+    saveLsStatus(stock.id, next); // localStorageにも同期
+
+    setSaving((prev) => ({ ...prev, [stock.id]: true }));
+    try {
+      const res = await fetch(`/api/stocks/${stock.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lite_status: next }),
+      });
+      if (!res.ok) {
+        // 失敗時はロールバック
+        const prev = stock.lite_status ?? localOverride[stock.id] ?? '未整理';
+        setLocalOverride((o) => ({ ...o, [stock.id]: prev }));
+      }
+    } catch {
+      // ネットワークエラー: localStorageの値は残るので次回ロード時にも保持
+    } finally {
+      setSaving((prev) => ({ ...prev, [stock.id]: false }));
+    }
   };
-
-  const statusOf = (id: string): LiteStatus => statuses[id] ?? '未整理';
 
   const stocks = useMemo(() => {
     let list = [...initialStocks];
-    if (filterStatus !== 'すべて') list = list.filter((s) => statusOf(s.id) === filterStatus);
+    if (filterStatus !== 'すべて') list = list.filter((s) => statusOf(s) === filterStatus);
     if (filterIntent !== 'すべて') list = list.filter((s) => s.intent === filterIntent);
     return list;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialStocks, filterStatus, filterIntent, statuses]);
+  }, [initialStocks, filterStatus, filterIntent, localOverride]);
 
-  // Status counts
   const counts = useMemo(() => {
     const m: Partial<Record<LiteStatus | 'すべて', number>> = { 'すべて': initialStocks.length };
     for (const s of STATUS_LIST) {
-      m[s] = initialStocks.filter((st) => statusOf(st.id) === s).length;
+      m[s] = initialStocks.filter((st) => statusOf(st) === s).length;
     }
     return m;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialStocks, statuses]);
+  }, [initialStocks, localOverride]);
 
   return (
     <div className="space-y-6">
@@ -144,7 +167,8 @@ export default function LiteStocksClient({ initialStocks }: { initialStocks: Ide
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {stocks.map((stock) => {
-            const status = statusOf(stock.id);
+            const status = statusOf(stock);
+            const isSaving = saving[stock.id];
             return (
               <div key={stock.id} className="rounded-2xl border p-4 flex flex-col gap-3"
                 style={{ backgroundColor: '#252240', borderColor: '#3a3660' }}>
@@ -182,14 +206,18 @@ export default function LiteStocksClient({ initialStocks }: { initialStocks: Ide
 
                 {/* Status change + date */}
                 <div className="flex items-center justify-between gap-2 border-t pt-2" style={{ borderColor: '#3a3660' }}>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(stock.id, e.target.value as LiteStatus)}
-                    className="text-xs rounded-lg px-2 py-1 border"
-                    style={{ backgroundColor: '#1f1d38', borderColor: '#4a4678', color: '#a8a4cc' }}
-                  >
-                    {STATUS_LIST.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={status}
+                      onChange={(e) => handleStatusChange(stock, e.target.value as LiteStatus)}
+                      disabled={isSaving}
+                      className="text-xs rounded-lg px-2 py-1 border"
+                      style={{ backgroundColor: '#1f1d38', borderColor: '#4a4678', color: '#a8a4cc' }}
+                    >
+                      {STATUS_LIST.map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                    {isSaving && <span className="text-[10px] text-gray-400">保存中…</span>}
+                  </div>
                   <span className="text-xs text-gray-300">{formatDate(stock.created_at)}</span>
                 </div>
               </div>

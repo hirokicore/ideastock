@@ -52,6 +52,12 @@ create table if not exists public.idea_stocks (
 -- alter table public.idea_stocks
 --   add column if not exists variations jsonb not null default '[]';
 
+-- Lite ステータス機能のカラム追加（Supabase Dashboard > SQL Editor で実行）:
+-- alter table public.idea_stocks
+--   add column if not exists lite_status text
+--     default '未整理'
+--     check (lite_status in ('未整理','軽処理済み','外部AI処理待ち','入力戻し待ち','詳細化済み','要修正'));
+
 -- RLS
 alter table public.idea_stocks enable row level security;
 
