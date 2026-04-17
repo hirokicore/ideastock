@@ -266,7 +266,7 @@ export default function LiteNewPage() {
       {step === 'process' && (
         <div className="space-y-5 rounded-2xl border p-6" style={{ backgroundColor: '#252240', borderColor: '#3a3660' }}>
           <p className="text-xs text-gray-500">
-            下のプロンプトをChatGPT/Claudeに渡し、結果をフォームに貼り付けてください。
+            下のプロンプトを ChatGPT に渡し、結果をフォームに貼り付けてください。
             スキップしてStep 4に進んでも保存できます。
           </p>
 
