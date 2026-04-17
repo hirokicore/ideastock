@@ -4,9 +4,9 @@ type ProcessRow = {
   process: string;
   current: string;
   who: '人間' | '外部AI' | '人間+AI' | 'サイト';
-  tool: string;
-  input: string;
-  output: string;
+  primary: string;    // 主担当ツール
+  alt: string;        // 代替候補
+  humanRole: string;  // 人間の関与タイミング
   destination: string;
 };
 
@@ -15,90 +15,90 @@ const ROWS: ProcessRow[] = [
     process: 'タイトル生成',
     current: 'Claude 自動',
     who: '人間',
-    tool: '自分',
-    input: 'raw_text',
-    output: 'title（1行）',
+    primary: '自分',
+    alt: '汎用AI（任意）',
+    humanRole: '自分でタイトルを決定',
     destination: '/lite/new ① タイトル欄',
   },
   {
     process: '要約',
     current: 'Claude 自動',
     who: '外部AI',
-    tool: 'ChatGPT / Claude',
-    input: 'raw_text',
-    output: 'summary（2〜3文）',
+    primary: 'ChatGPT',
+    alt: 'Gemini / 汎用AI',
+    humanRole: '結果を確認・必要なら修正して転記',
     destination: '/lite/new ② 要約欄',
   },
   {
     process: 'タグ抽出',
     current: 'Claude 自動',
     who: '外部AI',
-    tool: 'ChatGPT / Claude',
-    input: 'raw_text',
-    output: 'tags[]（5〜8個）',
+    primary: 'ChatGPT',
+    alt: '汎用AI（任意）',
+    humanRole: '不要タグを削除・追加して確定',
     destination: '/lite/new ② タグ欄',
   },
   {
     process: 'アイデア展開',
     current: 'Claude 自動',
     who: '外部AI',
-    tool: 'Claude / ChatGPT',
-    input: 'title + summary',
-    output: 'idea_list[]（3〜5案）',
+    primary: 'ChatGPT',
+    alt: 'Gemini（大量出力時）',
+    humanRole: '提案案を読んで採用するものを選ぶ',
     destination: '/lite/new ② アイデア展開欄',
   },
   {
     process: '商品形式の特定',
     current: 'Claude 自動',
     who: '人間+AI',
-    tool: 'Claude（プロンプト提供）',
-    input: 'summary + idea_list',
-    output: 'product_formats[]',
-    destination: '（現在Lite未実装 → rebuild で補完）',
+    primary: 'ChatGPT',
+    alt: 'Gemini',
+    humanRole: '実現可能な形式を自分で選択・確定',
+    destination: '（Lite未実装 → rebuild で補完）',
   },
   {
     process: 'スコアリング',
     current: 'Claude 自動（全6軸）',
     who: '人間+AI',
-    tool: 'Claude / ChatGPT + 人間判断',
-    input: 'title + summary',
-    output: '各スコア 1〜5',
+    primary: '汎用AI（任意）',
+    alt: 'Perplexity（市場調査含む場合）',
+    humanRole: 'AIの提案を参考に最終スコアを自分で入力',
     destination: '/lite/new ③ スコア欄',
   },
   {
     process: '用途・優先度判定',
     current: 'Claude 自動',
     who: '人間',
-    tool: '自分',
-    input: '内容を読んで判断',
-    output: 'intent / priority_category / time_slot',
+    primary: '自分',
+    alt: 'なし（判断は自分が行う）',
+    humanRole: '完全に自分が決定',
     destination: '/lite/new ② 用途・優先度セレクト',
   },
   {
     process: '類似検索',
     current: 'Claude 自動（50件比較）',
     who: '人間',
-    tool: '自分（/lite/stocks を見ながら）',
-    input: '既存一覧',
-    output: 'related_ids[]',
+    primary: '自分（/lite/stocks を見ながら）',
+    alt: 'Perplexity（類似サービス調査）',
+    humanRole: '一覧を目視して関連IDを手動で設定',
     destination: '/stocks/[id] 関連ストック PATCH',
   },
   {
     process: 'アイデア改善（refine）',
     current: 'Claude 自動（max_tokens 3000）',
-    who: '外部AI',
-    tool: 'Claude（プロンプト手動実行）',
-    input: 'stock全体のテキスト',
-    output: '改善後スコア + 差分説明',
+    who: '人間+AI',
+    primary: 'ChatGPT',
+    alt: 'Gemini（長文改善・大量出力時）',
+    humanRole: '改善案を読んで採用するかを判断・転記',
     destination: '/lite/rebuild → 個別フィールド更新',
   },
   {
     process: '推薦提案',
     current: 'Claude 自動（全ストック対象）',
     who: '人間',
-    tool: '自分（/lite/stocks のフィルタで代替）',
-    input: 'goal + 全ストック',
-    output: '推薦3件',
+    primary: '自分（/lite/stocks フィルタで代替）',
+    alt: 'Perplexity（市場トレンド調査）',
+    humanRole: 'フィルタ結果を見て今日やることを自分で決定',
     destination: '（Liteでは手動フィルタで代替）',
   },
 ];
@@ -175,10 +175,10 @@ export default function LiteMapPage() {
       <section>
         <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">処理分担表</h2>
         <div className="rounded-xl border overflow-x-auto" style={{ borderColor: '#3a3660' }}>
-          <table className="w-full text-xs min-w-[700px]">
+          <table className="w-full text-xs min-w-[860px]">
             <thead>
               <tr style={{ backgroundColor: '#2e2b50' }}>
-                {['処理', '通常版', 'Lite担当', 'ツール', '入力', '出力', '入力先'].map((h) => (
+                {['処理', '通常版', '担当', '主担当ツール', '代替候補', '人間の関与タイミング', '入力先'].map((h) => (
                   <th key={h} className="text-left px-3 py-2.5 text-gray-400 font-medium whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -187,14 +187,14 @@ export default function LiteMapPage() {
               {ROWS.map((row) => (
                 <tr key={row.process} className="transition-colors hover:bg-brand-50">
                   <td className="px-3 py-2.5 font-medium text-gray-700 whitespace-nowrap">{row.process}</td>
-                  <td className="px-3 py-2.5 text-gray-400">{row.current}</td>
+                  <td className="px-3 py-2.5 text-gray-400 whitespace-nowrap">{row.current}</td>
                   <td className="px-3 py-2.5">
                     <span className={`badge text-[10px] ${WHO_STYLE[row.who]}`}>{row.who}</span>
                   </td>
-                  <td className="px-3 py-2.5 text-gray-500">{row.tool}</td>
-                  <td className="px-3 py-2.5 text-gray-400 font-mono text-[11px]">{row.input}</td>
-                  <td className="px-3 py-2.5 text-gray-400 font-mono text-[11px]">{row.output}</td>
-                  <td className="px-3 py-2.5 text-brand-600 text-[11px]">{row.destination}</td>
+                  <td className="px-3 py-2.5 text-gray-600 font-medium whitespace-nowrap">{row.primary}</td>
+                  <td className="px-3 py-2.5 text-gray-400">{row.alt}</td>
+                  <td className="px-3 py-2.5 text-gray-500 leading-relaxed">{row.humanRole}</td>
+                  <td className="px-3 py-2.5 text-brand-600 text-[11px] whitespace-nowrap">{row.destination}</td>
                 </tr>
               ))}
             </tbody>
@@ -210,8 +210,10 @@ export default function LiteMapPage() {
             <span key={k} className={`badge text-xs px-3 py-1.5 ${v}`}>{k}</span>
           ))}
         </div>
-        <p className="text-xs text-gray-500 mt-2">
-          「外部AI」は自分がChatGPT/Claudeのウェブ版にプロンプトを貼って実行し、結果をLiteフォームに転記する方式です。
+        <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+          「外部AI」はプロンプトを貼って実行し、結果をLiteフォームに転記する方式です。<br />
+          Claude はコード実装（Claude Code）専任。チャット用途は ChatGPT・Gemini・Perplexity・汎用AIで役割分担します。<br />
+          「人間+AI」はAIが案を出し、<strong className="text-gray-700">最終判断は自分が行う</strong>フローです。
         </p>
       </section>
 
