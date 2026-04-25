@@ -100,7 +100,8 @@ JSONのみ返してください。コードブロック不要。`;
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
-      max_tokens: 2048,
+      max_tokens: 4096,
+      thinking: { type: 'disabled' },
       messages: [{ role: 'user', content: prompt }],
     }),
   });
@@ -111,13 +112,21 @@ JSONのみ返してください。コードブロック不要。`;
   }
 
   const data = await res.json() as { content: { type: string; text: string }[] };
-  const text = (data.content.find((c) => c.type === 'text')?.text ?? '')
-    .replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+  const rawText = data.content.find((c) => c.type === 'text')?.text ?? '';
+  if (!rawText) {
+    const types = data.content.map((c: { type: string }) => c.type).join(', ');
+    return NextResponse.json({ error: `テキストブロックがありません (blocks: ${types})` }, { status: 500 });
+  }
+
+  const stripped = rawText.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+  const firstObj = stripped.indexOf('{');
+  const lastObj = stripped.lastIndexOf('}');
+  const text = firstObj !== -1 && lastObj !== -1 ? stripped.slice(firstObj, lastObj + 1) : stripped;
 
   try {
     const parsed = JSON.parse(text) as { ideas: GeneratedIdea[] };
     return NextResponse.json({ ideas: parsed.ideas });
   } catch {
-    return NextResponse.json({ error: `パースに失敗しました: ${text.slice(0, 200)}` }, { status: 500 });
+    return NextResponse.json({ error: `パースに失敗しました: ${text.slice(0, 300)}` }, { status: 500 });
   }
 }

@@ -2,7 +2,22 @@ import type { AnalysisResult, IdeaStock, OperationType, RefineResult, Variation 
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 
-async function callClaude(prompt: string, maxTokens = 2048): Promise<string> {
+function extractJsonFromText(text: string): string {
+  const stripped = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+  const firstObj = stripped.indexOf('{');
+  const firstArr = stripped.indexOf('[');
+  let start = -1;
+  if (firstObj !== -1 && firstArr !== -1) start = Math.min(firstObj, firstArr);
+  else if (firstObj !== -1) start = firstObj;
+  else if (firstArr !== -1) start = firstArr;
+  if (start === -1) return stripped;
+  const lastObj = stripped.lastIndexOf('}');
+  const lastArr = stripped.lastIndexOf(']');
+  const end = Math.max(lastObj, lastArr);
+  return end === -1 ? stripped.slice(start) : stripped.slice(start, end + 1);
+}
+
+async function callClaude(prompt: string, maxTokens = 4096): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     throw new Error('ANTHROPIC_API_KEY が設定されていません。Vercel の環境変数を確認してください。');
@@ -18,6 +33,7 @@ async function callClaude(prompt: string, maxTokens = 2048): Promise<string> {
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
       max_tokens: maxTokens,
+      thinking: { type: 'disabled' },
       messages: [{ role: 'user', content: prompt }],
     }),
   });
@@ -32,7 +48,11 @@ async function callClaude(prompt: string, maxTokens = 2048): Promise<string> {
   };
 
   const text = data.content.find((c) => c.type === 'text')?.text ?? '';
-  return text.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+  if (!text) {
+    const types = data.content.map((c) => c.type).join(', ');
+    throw new Error(`Anthropic API がテキストブロックを返しませんでした (blocks: ${types})`);
+  }
+  return extractJsonFromText(text);
 }
 
 export async function analyzeStock(params: {
